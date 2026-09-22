@@ -1,7 +1,7 @@
 <div align="center">
   <img src="docs/assets/anik_logo.png" alt="Anik Dairy Logo" height="70" />
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/assets/goose_logo.png" alt="Goose Industrial Logo" height="60" />
+  <img src="docs/assets/goose_logo.png" alt="Goose Industrial Logo" height="52" />
   <br/><br/>
   <h1>10 KL Pasteurizer Industrial Data Logging System</h1>
   <p><strong>Anik Dairy (Bhopal) & Goose Industrial Automation</strong></p>
