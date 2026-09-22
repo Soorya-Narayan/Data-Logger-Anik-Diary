@@ -1,0 +1,25 @@
+[Unit]
+Description=Anik Dairy 10 KL Pasteurizer Data Acquisition Poller
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=goosepi
+Group=goosepi
+WorkingDirectory=/home/goosepi/pasteurizer-logger
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/home/goosepi/pasteurizer-logger/venv/bin/python src/poller.py
+Restart=always
+RestartSec=5s
+
+# SD Card protection: Rate limit logging to prevent journald flash wear
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=50
+
+# Allow clean flush on shutdown
+KillSignal=SIGTERM
+TimeoutStopSec=20s
+
+[Install]
+WantedBy=multi-user.target

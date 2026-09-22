@@ -1,0 +1,77 @@
+{
+  "_comment": "PLC Global Variable Tag Mapping for Allen Bradley Micro850 (2080-LC70-24QBB). Update 'plc_tag' values once plant automation provides the final tag list. Variable names are CASE-SENSITIVE and must be declared in CCW Global Variables.",
+  "tags": {
+    "milk_flow": {
+      "plc_tag": "FIT_101_FlowRate",
+      "data_type": "REAL",
+      "unit": "L/hr",
+      "description": "Raw milk flow rate into pasteurizer"
+    },
+    "holding_in_temp": {
+      "plc_tag": "TT_101_HoldingInTemp",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Holding tube inlet temperature sensor"
+    },
+    "holding_out_temp": {
+      "plc_tag": "TT_102_HoldingOutTemp",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Holding tube outlet temperature sensor"
+    },
+    "product": {
+      "plc_tag": "Recipe_ProductName",
+      "data_type": "STRING",
+      "unit": "",
+      "description": "Current recipe / product run identifier"
+    },
+    "status": {
+      "plc_tag": "System_ProcessStatus",
+      "data_type": "STRING",
+      "unit": "",
+      "description": "Process state text description"
+    },
+    "fdv1_status": {
+      "plc_tag": "FDV1_ForwardStatus",
+      "data_type": "BOOL",
+      "unit": "",
+      "description": "FDV-1 valve position (1=Forward, 0=Divert)"
+    },
+    "fdv1_reason": {
+      "plc_tag": "FDV1_DiversionReason",
+      "data_type": "STRING",
+      "unit": "",
+      "description": "Diversion reason message for FDV-1"
+    },
+    "fdv2_status": {
+      "plc_tag": "FDV2_ForwardStatus",
+      "data_type": "BOOL",
+      "unit": "",
+      "description": "FDV-2 valve position (1=Forward, 0=Divert)"
+    },
+    "fdv2_reason": {
+      "plc_tag": "FDV2_DiversionReason",
+      "data_type": "STRING",
+      "unit": "",
+      "description": "Diversion reason message for FDV-2"
+    },
+    "cip_status": {
+      "plc_tag": "CIP_SystemActive",
+      "data_type": "BOOL",
+      "unit": "",
+      "description": "CIP sequence running flag"
+    },
+    "cip_step": {
+      "plc_tag": "CIP_CurrentStepName",
+      "data_type": "STRING",
+      "unit": "",
+      "description": "Current CIP phase (Caustic / Acid / Sanitisation / Flush)"
+    },
+    "fdv_feedback": {
+      "plc_tag": "FDV_AuxFeedbackWord",
+      "data_type": "DINT",
+      "unit": "",
+      "description": "Feedback bits from valve limit switches"
+    }
+  }
+}

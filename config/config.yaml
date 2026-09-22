@@ -1,0 +1,85 @@
+# ==============================================================================
+# Anik Dairy 10 KL Pasteurizer - Master Configuration
+# ==============================================================================
+
+plant:
+  name: "Anik Dairy - Bhopal"
+  unit: "10 KL Pasteurizer (Interim System)"
+  reference_line: "PHE-3"
+
+plc:
+  # Mode: 'mock' (simulation for dev/test in Pune) or 'live' (Micro850 EtherNet/IP at Bhopal)
+  mode: "mock"
+  
+  # PLACEHOLDER: Allen Bradley Micro850 IP address (2080-LC70-24QBB)
+  # Update this with the static IP assigned by the plant automation team
+  ip: "192.168.1.50"
+  
+  # Micro850 uses slot 0
+  slot: 0
+  
+  # Connection and read timeout in seconds
+  timeout: 3.0
+  
+  # Network retry settings
+  retry_initial_delay_sec: 1.0
+  retry_max_delay_sec: 30.0
+  retry_backoff_multiplier: 2.0
+  
+  # Mock specific settings (realistic noise and simulated dropouts)
+  mock:
+    enable_random_dropouts: true
+    dropout_probability: 0.005  # ~0.5% chance per cycle to simulate intermittent cable/switch drop
+    dropout_duration_cycles: 3  # Stay disconnected for 3 seconds before recovering
+
+polling:
+  # Polling interval in seconds (reference PHE-3 report uses 1-second resolution)
+  interval_seconds: 1.0
+
+storage:
+  # SQLite database path
+  db_path: "data/pasteurizer_data.db"
+  
+  # SD Card Optimization: Buffer writes in memory and flush in atomic batches
+  # Every 15 seconds OR when buffer reaches 30 records, whichever comes first
+  batch_flush_seconds: 15.0
+  batch_max_size: 30
+  
+  # SQLite WAL (Write-Ahead Logging) checkpoint interval in seconds
+  wal_autocheckpoint_pages: 1000
+
+dashboard:
+  # Web server settings (0.0.0.0 allows client PC to connect via Pi IP)
+  host: "0.0.0.0"
+  port: 8080
+  
+  # Dashboard live trend window in minutes (default 30 min)
+  trend_window_minutes: 30
+  
+  # Client browser auto-poll interval in milliseconds
+  client_poll_interval_ms: 1000
+
+reporting:
+  output_dir: "reports"
+  
+  # Shift change hours (24-hour format): Shift 1 (06:00), Shift 2 (14:00), Shift 3 (22:00)
+  shift_hours: [6, 14, 22]
+  
+  # Daily summary report generated at 06:00 covering previous 24 hours
+  daily_report_hour: 6
+  
+  # Downsampling resolution in Excel report (1 for full 1-sec, 5 or 10 for compact audit logs)
+  excel_sample_interval_sec: 1
+  
+  # Optional SMTP Email Dispatch (Disabled by default)
+  email:
+    enabled: false
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    use_tls: true
+    username: "reports@example.com"
+    password: "YOUR_APP_PASSWORD_HERE"
+    sender: "anik.pasteurizer@example.com"
+    recipients:
+      - "plant.manager@anikdairy.com"
+      - "quality.assurance@anikdairy.com"

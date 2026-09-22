@@ -1,0 +1,147 @@
+"""
+Unit and Integration Tests for Pasteurizer Data Logging System.
+"""
+
+import os
+import sys
+import shutil
+import unittest
+from pathlib import Path
+from datetime import datetime, timedelta
+
+# Add root to sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from src.plc.mock_client import MockPLCClient
+from src.plc.live_client import LivePLCClient
+from src.storage.db import DatabaseManager
+from src.storage.buffer import DataBuffer
+from src.reports.generator import ExcelReportGenerator
+
+
+class TestPasteurizerSystem(unittest.TestCase):
+
+    def setUp(self):
+        self.test_dir = Path("scratch/test_env")
+        self.test_dir.mkdir(parents=True, exist_ok=True)
+        self.test_db_path = str(self.test_dir / "test_pasteurizer.db")
+
+        self.mock_config = {
+            "plc": {
+                "mode": "mock",
+                "ip": "192.168.1.50",
+                "slot": 0,
+                "timeout": 3.0,
+                "mock": {
+                    "enable_random_dropouts": False
+                }
+            }
+        }
+
+        self.mock_tags = {
+            "tags": {
+                "milk_flow": {"plc_tag": "FIT_101_FlowRate"},
+                "holding_in_temp": {"plc_tag": "TT_101_HoldingInTemp"},
+                "holding_out_temp": {"plc_tag": "TT_102_HoldingOutTemp"},
+                "product": {"plc_tag": "Recipe_ProductName"},
+                "status": {"plc_tag": "System_ProcessStatus"},
+                "fdv1_status": {"plc_tag": "FDV1_ForwardStatus"},
+                "fdv1_reason": {"plc_tag": "FDV1_DiversionReason"},
+                "fdv2_status": {"plc_tag": "FDV2_ForwardStatus"},
+                "fdv2_reason": {"plc_tag": "FDV2_DiversionReason"},
+                "cip_status": {"plc_tag": "CIP_SystemActive"},
+                "cip_step": {"plc_tag": "CIP_CurrentStepName"},
+                "fdv_feedback": {"plc_tag": "FDV_AuxFeedbackWord"}
+            }
+        }
+
+    def tearDown(self):
+        if self.test_dir.exists():
+            shutil.rmtree(self.test_dir, ignore_errors=True)
+
+    def test_mock_plc_client_telemetry(self):
+        """Verify MockPLCClient generates complete, valid telemetry."""
+        client = MockPLCClient(self.mock_config)
+        self.assertTrue(client.connect())
+        self.assertTrue(client.is_connected())
+
+        sample = client.read_tags()
+        self.assertIn("timestamp", sample)
+        self.assertIn("milk_flow", sample)
+        self.assertIn("holding_in_temp", sample)
+        self.assertIn("holding_out_temp", sample)
+        self.assertIn("status", sample)
+        self.assertIn("fdv1_status", sample)
+        self.assertIn("fdv2_status", sample)
+
+        # Realistic ranges
+        self.assertGreaterEqual(sample["milk_flow"], 0.0)
+        self.assertGreaterEqual(sample["holding_in_temp"], 30.0)
+        self.assertLessEqual(sample["holding_in_temp"], 110.0)
+
+        client.disconnect()
+        self.assertFalse(client.is_connected())
+
+    def test_database_and_buffer_batching(self):
+        """Verify buffered writes to SQLite without row-by-row disk commits."""
+        db = DatabaseManager(self.test_db_path)
+        buffer = DataBuffer(db, batch_flush_seconds=100.0, batch_max_size=5)
+
+        client = MockPLCClient(self.mock_config)
+        client.connect()
+
+        # Add 4 records (below batch_max_size=5, should remain in buffer)
+        for _ in range(4):
+            sample = client.read_tags()
+            buffer.add(sample)
+
+        self.assertEqual(buffer.pending_count(), 4)
+        self.assertIsNone(db.get_latest_record())
+
+        # Add 5th record -> Should auto-flush
+        sample = client.read_tags()
+        buffer.add(sample)
+        self.assertEqual(buffer.pending_count(), 0)
+
+        latest = db.get_latest_record()
+        self.assertIsNotNone(latest)
+        self.assertEqual(latest["product"], sample["product"])
+
+    def test_excel_report_generation(self):
+        """Verify ExcelReportGenerator produces valid .xlsx matching PHE-3 format."""
+        db = DatabaseManager(self.test_db_path)
+        client = MockPLCClient(self.mock_config)
+        client.connect()
+
+        # Insert 30 test records
+        records = []
+        base_time = datetime.now() - timedelta(minutes=5)
+        for i in range(30):
+            s = client.read_tags()
+            s["timestamp"] = (base_time + timedelta(seconds=i)).isoformat()
+            records.append(s)
+
+        db.insert_batch(records)
+
+        generator = ExcelReportGenerator(
+            db_manager=db,
+            output_dir=str(self.test_dir / "reports")
+        )
+
+        start_iso = base_time.isoformat()
+        end_iso = (base_time + timedelta(minutes=10)).isoformat()
+
+        report_file = generator.generate_report(
+            start_iso=start_iso,
+            end_iso=end_iso,
+            report_title="Test Shift Report",
+            sample_step=1
+        )
+
+        self.assertIsNotNone(report_file)
+        self.assertTrue(report_file.exists())
+        self.assertTrue(report_file.stat().st_size > 1000)
+
+
+if __name__ == "__main__":
+    unittest.main()

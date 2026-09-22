@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ plant_name }} - {{ unit_name }} | Live Data Logger</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <!-- Chart.js for live trends -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <!-- Top Header -->
+    <header class="navbar">
+      <div class="header-left">
+        <div class="brand-logos">
+          <img src="/static/img/anik_logo.png" alt="Anik Dairy Logo" class="brand-logo-img anik-logo">
+          <img src="/static/img/goose_logo.png" alt="Goose Industrial Logo" class="brand-logo-img goose-logo">
+        </div>
+        <div class="header-titles">
+          <h1 class="plant-title">{{ plant_name }}</h1>
+          <div class="unit-subtitle">{{ unit_name }} <span class="badge-ref">Ref: {{ reference_line }}</span></div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div id="mode-badge" class="badge badge-mode {{ 'badge-mock' if plc_mode == 'MOCK' else 'badge-live' }}">
+          {{ plc_mode }} MODE: {{ plc_ip if plc_mode == 'LIVE' else 'SCADA Sim' }}
+        </div>
+        <div id="connection-badge" class="badge badge-connected">
+          <span class="heartbeat-dot"></span> <span id="conn-text">POLLING</span>
+        </div>
+        <div class="clock" id="clock-display">--:--:--</div>
+      </div>
+    </header>
+
+    <!-- Operational State Banner -->
+    <section class="state-banner" id="state-banner">
+      <div class="state-label">CURRENT PROCESS STATE</div>
+      <div class="state-text" id="status-text">INITIALIZING TELEMETRY...</div>
+      <div class="state-timestamp" id="last-update-text">Waiting for poller...</div>
+    </section>
+
+    <!-- Main Metrics Grid -->
+    <main class="grid-metrics">
+      <!-- Card: Milk Flow -->
+      <div class="card metric-card">
+        <div class="card-header">
+          <span class="metric-title">Milk Flow Rate</span>
+          <span class="metric-tag">FIT-101</span>
+        </div>
+        <div class="metric-body">
+          <span class="metric-value" id="val-flow">--</span>
+          <span class="metric-unit">L/hr</span>
+        </div>
+        <div class="metric-footer" id="flow-subtext">Operating range: 29k - 37k L/hr</div>
+      </div>
+
+      <!-- Card: Holding In Temp -->
+      <div class="card metric-card">
+        <div class="card-header">
+          <span class="metric-title">Holding In Temp</span>
+          <span class="metric-tag">TT-101</span>
+        </div>
+        <div class="metric-body">
+          <span class="metric-value temp-in" id="val-holding-in">--</span>
+          <span class="metric-unit">°C</span>
+        </div>
+        <div class="metric-footer">Target: 81.0°C - 81.5°C</div>
+      </div>
+
+      <!-- Card: Holding Out Temp -->
+      <div class="card metric-card">
+        <div class="card-header">
+          <span class="metric-title">Holding Out Temp</span>
+          <span class="metric-tag">TT-102</span>
+        </div>
+        <div class="metric-body">
+          <span class="metric-value temp-out" id="val-holding-out">--</span>
+          <span class="metric-unit">°C</span>
+        </div>
+        <div class="metric-footer">Target: ~80.8°C</div>
+      </div>
+
+      <!-- Card: Product Run -->
+      <div class="card metric-card">
+        <div class="card-header">
+          <span class="metric-title">Product Run</span>
+          <span class="metric-tag">RECIPE</span>
+        </div>
+        <div class="metric-body">
+          <span class="metric-value val-product" id="val-product">--</span>
+        </div>
+        <div class="metric-footer" id="product-subtext">Active Production Batch</div>
+      </div>
+    </main>
+
+    <!-- Sub-row: Valves & CIP status -->
+    <section class="grid-valves">
+      <!-- FDV-1 -->
+      <div class="card valve-card">
+        <div class="valve-title">Flow Diversion Valve 1 (FDV-1)</div>
+        <div class="valve-status-wrapper">
+          <span class="valve-pill" id="fdv1-pill">UNKNOWN</span>
+          <div class="valve-reason" id="fdv1-reason">Reason: --</div>
+        </div>
+      </div>
+
+      <!-- FDV-2 -->
+      <div class="card valve-card">
+        <div class="valve-title">Flow Diversion Valve 2 (FDV-2)</div>
+        <div class="valve-status-wrapper">
+          <span class="valve-pill" id="fdv2-pill">UNKNOWN</span>
+          <div class="valve-reason" id="fdv2-reason">Reason: --</div>
+        </div>
+      </div>
+
+      <!-- CIP System -->
+      <div class="card valve-card">
+        <div class="valve-title">Clean-In-Place (CIP) Status</div>
+        <div class="valve-status-wrapper">
+          <span class="valve-pill" id="cip-pill">STANDBY</span>
+          <div class="valve-reason" id="cip-step">Step: None</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Trend Chart Card -->
+    <section class="card chart-card">
+      <div class="chart-header">
+        <div>
+          <h2 class="chart-title">Process Trend (Temperature & Flow)</h2>
+          <div class="chart-subtitle">Real-time telemetric profile</div>
+        </div>
+        <div class="chart-controls">
+          <button class="btn-range active" data-mins="15">15 Min</button>
+          <button class="btn-range" data-mins="30">30 Min</button>
+          <button class="btn-range" data-mins="60">1 Hour</button>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </section>
+
+    <!-- System Diagnostics Footer -->
+    <footer class="system-footer">
+      <div class="sys-item">Raspberry Pi 4B (4GB)</div>
+      <div class="sys-item">CPU: <span id="sys-cpu">--%</span></div>
+      <div class="sys-item">Core Temp: <span id="sys-temp">--°C</span></div>
+      <div class="sys-item">RAM: <span id="sys-ram">-- MB</span></div>
+      <div class="sys-item">SD Free: <span id="sys-disk">-- GB</span></div>
+      <div class="sys-item">Storage Mode: <strong>SQLite WAL (Buffered)</strong></div>
+    </footer>
+  </div>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+[Unit]
+Description=Anik Dairy 10 KL Pasteurizer Shift/Daily Report Generator
+After=network.target pasteurizer-poller.service
+
+[Service]
+Type=oneshot
+User=goosepi
+Group=goosepi
+WorkingDirectory=/home/goosepi/pasteurizer-logger
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/home/goosepi/pasteurizer-logger/venv/bin/python src/reports/scheduler.py

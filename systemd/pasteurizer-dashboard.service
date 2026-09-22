@@ -1,0 +1,21 @@
+[Unit]
+Description=Anik Dairy 10 KL Pasteurizer Live Web Dashboard
+After=network.target pasteurizer-poller.service
+Wants=pasteurizer-poller.service
+
+[Service]
+Type=simple
+User=goosepi
+Group=goosepi
+WorkingDirectory=/home/goosepi/pasteurizer-logger
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/home/goosepi/pasteurizer-logger/venv/bin/python src/dashboard/app.py
+Restart=always
+RestartSec=5s
+
+# Rate limit logging
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=50
+
+[Install]
+WantedBy=multi-user.target
