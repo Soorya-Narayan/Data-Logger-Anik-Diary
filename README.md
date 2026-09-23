@@ -247,22 +247,26 @@ Check database record counts:
 ./venv/bin/python src/cli.py db-stats
 ```
 
----
-
-## Step 5: Live Web Dashboard
+## Step 5: Live Web Dashboard & Data Exports
 
 Run the Flask dashboard server:
 ```bash
 ./venv/bin/python src/dashboard/app.py
 ```
-Open a browser on the client PC (connected to the same switch) and navigate to:
-`http://<pi-ip>:8080` (or `http://anik-pasteurizer.local:8080`)
+Open a browser on the client PC (connected to the same switch or Wi-Fi) and navigate to:
+`http://192.168.1.169:8080` (or `http://heatwatch.local:8080`)
 
 ### Dashboard Features
+- **No-Scroll Single Viewport**: Compact SCADA layout designed to fit 100% within the screen without vertical scrolling.
+- **Top Brand Separator**: Anik Dairy and Goose logos separated by a clean vertical divider line at top-left.
 - **High-Visibility Banner**: Displays immediate process state (e.g. `PRODUCTION ACCEPTED`, `PRODUCTION CIRCULATION`, `CIP: Caustic Flush running`) with color-coded alerting.
 - **Top Metrics**: Real-time Milk Flow (L/hr), Holding In Temp (°C), Holding Out Temp (°C), and Recipe Product Code.
-- **Valve Status**: Position badges (Forward / Divert) and diagnostic reasons for FDV-1 and FDV-2.
+- **Valve & CIP Actuators**: Position badges (Forward / Divert) and diagnostic reasons for FDV-1 and FDV-2.
 - **Dual-Axis Live Trend**: Interactive Chart.js graph plotting Temperature (°C) on the left axis and Milk Flow (L/hr) on the right axis across 15m, 30m, or 60m windows.
+- **One-Click Data Exports**:
+  - **CSV**: Instant download of raw telemetric log rows.
+  - **Excel**: Formatted audit-grade workbook matching the sister line PHE-3 SCADA report with embedded openpyxl charts.
+  - **PDF**: Executive quality audit report featuring both the **Anik Dairy** and **Goose** logos in the header, KPI summary table, and formatted telemetry tables.
 - **Pi Diagnostics**: Real-time CPU load, SoC temperature, RAM usage, and remaining SD card storage.
 
 ---
@@ -296,28 +300,20 @@ sudo journalctl -u pasteurizer-dashboard.service -f
 
 ---
 
-## Step 7: Automated SCADA-Style Excel Reports
+## Step 7: Automated SCADA Reports & Exports (Excel, PDF, CSV)
 
-Generate an ad-hoc report on demand via the CLI:
+Generate an ad-hoc report on demand via the CLI in your chosen format:
 ```bash
-# Generate report for last 4 hours
-./venv/bin/python src/cli.py generate-report --hours 4
+# Generate Excel report for last 4 hours
+./venv/bin/python src/cli.py generate-report --hours 4 --format excel
 
-# Generate report downsampled to 5-second intervals
-./venv/bin/python src/cli.py generate-report --hours 8 --sample-step 5
+# Generate PDF report with Anik & Goose logos for last 8 hours
+./venv/bin/python src/cli.py generate-report --hours 8 --format pdf
+
+# Generate CSV log for last 24 hours
+./venv/bin/python src/cli.py generate-report --hours 24 --format csv
 ```
 
-Reports are saved to `reports/shift_report_YYYYMMDD_HHMM.xlsx`.
-
-### Automatic Shift Schedule
-The systemd timer `pasteurizer-report.timer` triggers automatically at:
-- **06:00**: Shift 3 / Daily Summary
-- **14:00**: Shift 1 Report
-- **22:00**: Shift 2 Report
-
-### Report Layout (Matching PHE-3 Standard)
-1. **Executive Summary Sheet**:
-   - Total Milk Processed (computed via numerical flow integration in KL and Liters)
    - Active Production Time vs CIP Duration vs Standby Time
    - Average Holding Tube Inlet and Outlet Temperatures during production
    - Number and duration of safety diversion events

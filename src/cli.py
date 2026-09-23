@@ -83,25 +83,63 @@ def cmd_db_stats(args):
 
 
 def cmd_generate_report(args):
-    """Trigger manual Excel report generation."""
+    """Trigger manual Excel, PDF, or CSV report generation."""
     config, _ = load_config()
-    scheduler = ReportScheduler()
+    db_path = config.get("storage", {}).get("db_path", "data/pasteurizer_data.db")
+    db = DatabaseManager(db_path=db_path)
     hours = args.hours
+    fmt = getattr(args, "format", "excel").lower()
 
-    print(f"\n[Report] Generating report for last {hours} hours...")
+    print(f"\n[Report] Generating {fmt.upper()} report for last {hours} hours...")
     now = datetime.now()
     start = now - timedelta(hours=hours)
 
-    gen = scheduler.generator
-    path = gen.generate_report(
-        start_iso=start.isoformat(),
-        end_iso=now.isoformat(),
-        report_title=f"Manual Report ({hours}h Window)",
-        sample_step=args.sample_step
-    )
+    if fmt == "pdf":
+        from src.reports.pdf_generator import PDFReportGenerator
+        gen = PDFReportGenerator(db_manager=db, plant_info=config.get("plant"))
+        path = gen.generate_pdf(
+            start_iso=start.isoformat(),
+            end_iso=now.isoformat(),
+            report_title=f"Manual Quality Audit ({hours}h Window)",
+            sample_step=args.sample_step
+        )
+    elif fmt == "csv":
+        import csv
+        rows = db.get_records_between(start.isoformat(), now.isoformat())
+        if not rows:
+            rows = db.get_recent_records(limit=int(hours * 3600))
+        path = Path("reports") / f"manual_log_{now.strftime('%Y%m%d_%H%M')}.csv"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "Timestamp", "Product", "Milk Flow (L/hr)", "Holding In Temp (C)",
+                "Holding Out Temp (C)", "FDV-1 Status", "FDV-1 Reason",
+                "FDV-2 Status", "FDV-2 Reason", "CIP Status", "CIP Step", "Process Status"
+            ])
+            for r in rows:
+                writer.writerow([
+                    r.get("timestamp"), r.get("product"), r.get("milk_flow"),
+                    r.get("holding_in_temp"), r.get("holding_out_temp"),
+                    "FORWARD" if r.get("fdv1_status") == 1 else "DIVERT",
+                    r.get("fdv1_reason"),
+                    "FORWARD" if r.get("fdv2_status") == 1 else "DIVERT",
+                    r.get("fdv2_reason"),
+                    "ACTIVE" if r.get("cip_status") == 1 else "IDLE",
+                    r.get("cip_step"), r.get("status")
+                ])
+    else:
+        scheduler = ReportScheduler()
+        gen = scheduler.generator
+        path = gen.generate_report(
+            start_iso=start.isoformat(),
+            end_iso=now.isoformat(),
+            report_title=f"Manual Report ({hours}h Window)",
+            sample_step=args.sample_step
+        )
 
-    if path:
-        print(f"[Report] Generated successfully: {path.resolve()}")
+    if path and Path(path).exists():
+        print(f"[Report] Generated successfully: {Path(path).resolve()}")
     else:
         print("[Report] No data logged in the specified time window.")
 
@@ -119,8 +157,9 @@ def main():
     p_stats.set_defaults(func=cmd_db_stats)
 
     # generate-report
-    p_report = subparsers.add_parser("generate-report", help="Generate ad-hoc Excel report")
+    p_report = subparsers.add_parser("generate-report", help="Generate ad-hoc report (Excel, PDF, CSV)")
     p_report.add_argument("--hours", type=float, default=1.0, help="Hours of history to include (default: 1.0)")
+    p_report.add_argument("--format", type=str, choices=["excel", "pdf", "csv"], default="excel", help="Output format: excel, pdf, or csv (default: excel)")
     p_report.add_argument("--sample-step", type=int, default=1, help="Downsampling step in seconds (default: 1)")
     p_report.set_defaults(func=cmd_generate_report)
 

@@ -1,17 +1,14 @@
 /**
  * Anik Dairy 10 KL Pasteurizer Dashboard Script
- * Handles real-time polling, DOM updates, and Chart.js telemetry rendering.
+ * Handles real-time polling, Chart.js trend, and CSV / Excel / PDF data exports.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
   let trendChart = null;
   let activeMinutes = 15;
-  let lastSampleTimestamp = null;
 
   // DOM Elements
   const clockDisplay = document.getElementById("clock-display");
-  const connBadge = document.getElementById("connection-badge");
-  const connText = document.getElementById("conn-text");
   const stateBanner = document.getElementById("state-banner");
   const statusText = document.getElementById("status-text");
   const lastUpdateText = document.getElementById("last-update-text");
@@ -33,6 +30,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const sysRam = document.getElementById("sys-ram");
   const sysDisk = document.getElementById("sys-disk");
 
+  const exportRange = document.getElementById("export-range");
+  const btnExportCsv = document.getElementById("btn-export-csv");
+  const btnExportExcel = document.getElementById("btn-export-excel");
+  const btnExportPdf = document.getElementById("btn-export-pdf");
+
   // Digital Clock
   setInterval(() => {
     const now = new Date();
@@ -48,23 +50,23 @@ document.addEventListener("DOMContentLoaded", () => {
         labels: [],
         datasets: [
           {
-            label: "Holding In Temp (°C)",
+            label: "Holding In (°C)",
             data: [],
             borderColor: "#fb923c",
             backgroundColor: "rgba(251, 146, 60, 0.1)",
             borderWidth: 2,
             yAxisID: "yTemp",
-            tension: 0.2,
+            tension: 0.15,
             pointRadius: 0,
           },
           {
-            label: "Holding Out Temp (°C)",
+            label: "Holding Out (°C)",
             data: [],
             borderColor: "#38bdf8",
             backgroundColor: "rgba(56, 189, 248, 0.1)",
             borderWidth: 2,
             yAxisID: "yTemp",
-            tension: 0.2,
+            tension: 0.15,
             pointRadius: 0,
           },
           {
@@ -75,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
             borderWidth: 1.5,
             fill: true,
             yAxisID: "yFlow",
-            tension: 0.2,
+            tension: 0.15,
             pointRadius: 0,
           }
         ]
@@ -83,23 +85,23 @@ document.addEventListener("DOMContentLoaded", () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: false, // Disabled for fast continuous rendering
+        animation: false,
         interaction: {
           mode: "index",
           intersect: false
         },
         scales: {
           x: {
-            grid: { color: "rgba(255, 255, 255, 0.05)" },
-            ticks: { color: "#94a3b8", maxTicksLimit: 8 }
+            grid: { color: "rgba(255, 255, 255, 0.04)" },
+            ticks: { color: "#94a3b8", maxTicksLimit: 7, font: { size: 10 } }
           },
           yTemp: {
             type: "linear",
             display: true,
             position: "left",
-            title: { display: true, text: "Temperature (°C)", color: "#94a3b8" },
-            grid: { color: "rgba(255, 255, 255, 0.08)" },
-            ticks: { color: "#cbd5e1" },
+            title: { display: true, text: "Temp (°C)", color: "#94a3b8", font: { size: 10 } },
+            grid: { color: "rgba(255, 255, 255, 0.06)" },
+            ticks: { color: "#cbd5e1", font: { size: 10 } },
             min: 40,
             max: 100
           },
@@ -107,16 +109,16 @@ document.addEventListener("DOMContentLoaded", () => {
             type: "linear",
             display: true,
             position: "right",
-            title: { display: true, text: "Flow Rate (L/hr)", color: "#94a3b8" },
+            title: { display: true, text: "Flow (L/hr)", color: "#94a3b8", font: { size: 10 } },
             grid: { drawOnChartArea: false },
-            ticks: { color: "#818cf8" },
+            ticks: { color: "#818cf8", font: { size: 10 } },
             min: 0,
             max: 40000
           }
         },
         plugins: {
           legend: {
-            labels: { color: "#cbd5e1", boxWidth: 12, padding: 15 }
+            labels: { color: "#cbd5e1", boxWidth: 10, padding: 10, font: { size: 11 } }
           }
         }
       }
@@ -132,14 +134,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (json.status === "ok" && json.data) {
         const d = json.data;
-        lastSampleTimestamp = d.timestamp;
 
         // Banner
         statusText.textContent = d.status || "UNKNOWN STATUS";
         const sampleTime = new Date(d.timestamp);
-        lastUpdateText.textContent = "Last Sample: " + sampleTime.toLocaleTimeString() + " (1s Interval)";
+        lastUpdateText.textContent = "Last sample: " + sampleTime.toLocaleTimeString() + " (1s Interval)";
 
-        // Style Banner according to process state
+        // State banner coloring
         stateBanner.className = "state-banner";
         const st = (d.status || "").toUpperCase();
         if (st.includes("PRODUCTION ACCEPTED")) {
@@ -187,17 +188,9 @@ document.addEventListener("DOMContentLoaded", () => {
           cipPill.textContent = "STANDBY";
         }
         cipStep.textContent = "Step: " + (d.cip_step || "None");
-
-        connText.textContent = "ONLINE";
-        connBadge.style.borderColor = "#22c55e";
-      } else {
-        statusText.textContent = "WAITING FOR POLLER SERVICE...";
-        connText.textContent = "CONNECTING";
       }
     } catch (err) {
       console.warn("Poll current telemetry error:", err);
-      connText.textContent = "OFFLINE";
-      connBadge.style.borderColor = "#ef4444";
     }
   }
 
@@ -257,6 +250,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Export handlers
+  function triggerExport(format) {
+    const hours = exportRange ? exportRange.value : 8;
+    const url = `/api/export/${format}?hours=${hours}`;
+    window.location.href = url;
+  }
+
+  if (btnExportCsv) {
+    btnExportCsv.addEventListener("click", () => triggerExport("csv"));
+  }
+  if (btnExportExcel) {
+    btnExportExcel.addEventListener("click", () => triggerExport("excel"));
+  }
+  if (btnExportPdf) {
+    btnExportPdf.addEventListener("click", () => triggerExport("pdf"));
+  }
+
   // Range Buttons Handler
   document.querySelectorAll(".btn-range").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -273,7 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
   pollHistory();
   pollSystem();
 
-  setInterval(pollCurrent, 1000);   // Every 1s for immediate live values
-  setInterval(pollHistory, 5000);   // Every 5s for trend chart refresh
-  setInterval(pollSystem, 15000);   // Every 15s for Pi system metrics
+  setInterval(pollCurrent, 1000);   // 1s live values
+  setInterval(pollHistory, 5000);   // 5s chart refresh
+  setInterval(pollSystem, 15000);   // 15s diagnostics
 });

@@ -10,18 +10,25 @@ import json
 import psutil
 from datetime import datetime, timedelta
 from pathlib import Path
-from flask import Flask, render_template, jsonify, request
+import csv
+import io
+from flask import Flask, render_template, jsonify, request, send_file, Response
 
 # Add project root to Python path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from src.storage import DatabaseManager
+from src.reports.generator import ExcelReportGenerator
+from src.reports.pdf_generator import PDFReportGenerator
 
 app = Flask(__name__)
 
 # Load config
-CONFIG_PATH = Path("config/config.yaml")
-TAGS_PATH = Path("config/tags.json")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+CONFIG_PATH = PROJECT_ROOT / "config/config.yaml"
+TAGS_PATH = PROJECT_ROOT / "config/tags.json"
+REPORTS_DIR = PROJECT_ROOT / "reports"
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 def load_yaml(path: Path) -> dict:
     if path.exists():
@@ -31,7 +38,12 @@ def load_yaml(path: Path) -> dict:
 
 config = load_yaml(CONFIG_PATH)
 db_path = config.get("storage", {}).get("db_path", "data/pasteurizer_data.db")
+if not Path(db_path).is_absolute():
+    db_path = str(PROJECT_ROOT / db_path)
+
 db = DatabaseManager(db_path=db_path)
+excel_gen = ExcelReportGenerator(db_manager=db, output_dir=str(REPORTS_DIR), plant_info=config.get("plant"))
+pdf_gen = PDFReportGenerator(db_manager=db, output_dir=str(REPORTS_DIR), plant_info=config.get("plant"))
 
 
 @app.route("/")
@@ -127,6 +139,113 @@ def api_system():
         "disk_total_gb": round(disk.total / (1024 * 1024 * 1024), 2),
         "disk_used_pct": disk.percent
     })
+
+
+@app.route("/api/export/csv")
+def export_csv():
+    """Export process telemetry as CSV."""
+    hours = request.args.get("hours", default=8.0, type=float)
+    now = datetime.now()
+    start = now - timedelta(hours=hours)
+
+    rows = db.get_records_between(start.isoformat(), now.isoformat())
+    if not rows:
+        # Fallback to recent records if database clock difference
+        rows = db.get_recent_records(limit=int(hours * 3600))
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Timestamp", "Product", "Milk Flow (L/hr)", "Holding In Temp (C)",
+        "Holding Out Temp (C)", "FDV-1 Status", "FDV-1 Reason",
+        "FDV-2 Status", "FDV-2 Reason", "CIP Status", "CIP Step", "Process Status"
+    ])
+
+    for r in rows:
+        writer.writerow([
+            r.get("timestamp"),
+            r.get("product"),
+            r.get("milk_flow"),
+            r.get("holding_in_temp"),
+            r.get("holding_out_temp"),
+            "FORWARD" if r.get("fdv1_status") == 1 else "DIVERT",
+            r.get("fdv1_reason"),
+            "FORWARD" if r.get("fdv2_status") == 1 else "DIVERT",
+            r.get("fdv2_reason"),
+            "ACTIVE" if r.get("cip_status") == 1 else "IDLE",
+            r.get("cip_step"),
+            r.get("status")
+        ])
+
+    output.seek(0)
+    filename = f"pasteurizer_log_{now.strftime('%Y%m%d_%H%M')}.csv"
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@app.route("/api/export/excel")
+def export_excel():
+    """Export formatted Excel report with summary KPIs and charts."""
+    hours = request.args.get("hours", default=8.0, type=float)
+    step = request.args.get("step", default=1, type=int)
+    now = datetime.now()
+    start = now - timedelta(hours=hours)
+
+    title = f"Pasteurizer Telemetry ({int(hours)}h Window)"
+    path = excel_gen.generate_report(
+        start_iso=start.isoformat(),
+        end_iso=now.isoformat(),
+        report_title=title,
+        sample_step=step
+    )
+
+    if not path or not path.exists():
+        # Try wider window if empty
+        path = excel_gen.generate_report(
+            start_iso=(now - timedelta(days=7)).isoformat(),
+            end_iso=now.isoformat(),
+            report_title="Pasteurizer Telemetry (Full Available)",
+            sample_step=step
+        )
+
+    if not path or not path.exists():
+        return jsonify({"status": "error", "message": "No data available to generate Excel report"}), 404
+
+    return send_file(str(path.resolve()), as_attachment=True)
+
+
+@app.route("/api/export/pdf")
+def export_pdf():
+    """Export corporate audit-grade PDF with Anik Dairy & Goose logos."""
+    hours = request.args.get("hours", default=8.0, type=float)
+    step = request.args.get("step", default=1, type=int)
+    now = datetime.now()
+    start = now - timedelta(hours=hours)
+
+    title = f"Pasteurizer Quality Audit Report ({int(hours)}h Window)"
+    path = pdf_gen.generate_pdf(
+        start_iso=start.isoformat(),
+        end_iso=now.isoformat(),
+        report_title=title,
+        sample_step=step
+    )
+
+    if not path or not path.exists():
+        # Try wider window if empty
+        path = pdf_gen.generate_pdf(
+            start_iso=(now - timedelta(days=7)).isoformat(),
+            end_iso=now.isoformat(),
+            report_title="Pasteurizer Quality Audit Report (Full Available)",
+            sample_step=step
+        )
+
+    if not path or not path.exists():
+        return jsonify({"status": "error", "message": "No data available to generate PDF report"}), 404
+
+    return send_file(str(path.resolve()), as_attachment=True)
 
 
 if __name__ == "__main__":

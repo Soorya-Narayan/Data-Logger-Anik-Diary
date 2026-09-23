@@ -142,6 +142,40 @@ class TestPasteurizerSystem(unittest.TestCase):
         self.assertTrue(report_file.exists())
         self.assertTrue(report_file.stat().st_size > 1000)
 
+    def test_pdf_report_generation(self):
+        """Verify PDFReportGenerator produces valid .pdf with logos and KPIs."""
+        from src.reports.pdf_generator import PDFReportGenerator
+        db = DatabaseManager(self.test_db_path)
+        client = MockPLCClient(self.mock_config)
+        client.connect()
+
+        records = []
+        base_time = datetime.now() - timedelta(minutes=5)
+        for i in range(20):
+            s = client.read_tags()
+            s["timestamp"] = (base_time + timedelta(seconds=i)).isoformat()
+            records.append(s)
+
+        db.insert_batch(records)
+
+        generator = PDFReportGenerator(
+            db_manager=db,
+            output_dir=str(self.test_dir / "reports")
+        )
+
+        start_iso = base_time.isoformat()
+        end_iso = (base_time + timedelta(minutes=10)).isoformat()
+
+        report_file = generator.generate_pdf(
+            start_iso=start_iso,
+            end_iso=end_iso,
+            report_title="Test Quality Audit Report"
+        )
+
+        self.assertIsNotNone(report_file)
+        self.assertTrue(report_file.exists())
+        self.assertTrue(report_file.stat().st_size > 1000)
+
 
 if __name__ == "__main__":
     unittest.main()
