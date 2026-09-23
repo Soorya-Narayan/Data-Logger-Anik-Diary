@@ -83,6 +83,8 @@ html, body.no-scroll-body {
    1. Liquid Glass Navbar
    ========================================================================== */
 .navbar {
+  position: relative;
+  z-index: 1000;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -238,6 +240,7 @@ html, body.no-scroll-body {
    ========================================================================== */
 .reports-dropdown-wrapper {
   position: relative;
+  z-index: 1002;
 }
 
 .glass-popover {
@@ -245,14 +248,14 @@ html, body.no-scroll-body {
   top: calc(100% + 8px);
   right: 0;
   width: 320px;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: var(--glass-blur-heavy);
   -webkit-backdrop-filter: var(--glass-blur-heavy);
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 1);
   border-radius: 16px;
-  box-shadow: 0 20px 40px -6px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1);
+  box-shadow: 0 25px 50px -10px rgba(15, 23, 42, 0.25), 0 10px 25px -5px rgba(15, 23, 42, 0.12), inset 0 1px 0 #ffffff;
   padding: 12px;
-  z-index: 1000;
+  z-index: 99999;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -403,6 +406,8 @@ html, body.no-scroll-body {
    3. Liquid Glass State Banner
    ========================================================================== */
 .state-banner {
+  position: relative;
+  z-index: 10;
   display: flex;
   justify-content: space-between;
   align-items: center;
