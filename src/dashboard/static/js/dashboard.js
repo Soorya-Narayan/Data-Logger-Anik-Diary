@@ -52,8 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             label: "Holding In (°C)",
             data: [],
-            borderColor: "#fb923c",
-            backgroundColor: "rgba(251, 146, 60, 0.1)",
+            borderColor: "#ea580c",
+            backgroundColor: "rgba(234, 88, 12, 0.08)",
             borderWidth: 2,
             yAxisID: "yTemp",
             tension: 0.15,
@@ -62,8 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             label: "Holding Out (°C)",
             data: [],
-            borderColor: "#38bdf8",
-            backgroundColor: "rgba(56, 189, 248, 0.1)",
+            borderColor: "#0284c7",
+            backgroundColor: "rgba(2, 132, 199, 0.08)",
             borderWidth: 2,
             yAxisID: "yTemp",
             tension: 0.15,
@@ -72,8 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             label: "Milk Flow (L/hr)",
             data: [],
-            borderColor: "#818cf8",
-            backgroundColor: "rgba(99, 102, 241, 0.08)",
+            borderColor: "#4f46e5",
+            backgroundColor: "rgba(79, 70, 229, 0.06)",
             borderWidth: 1.5,
             fill: true,
             yAxisID: "yFlow",
@@ -92,16 +92,16 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         scales: {
           x: {
-            grid: { color: "rgba(255, 255, 255, 0.04)" },
-            ticks: { color: "#94a3b8", maxTicksLimit: 7, font: { size: 10 } }
+            grid: { color: "rgba(0, 0, 0, 0.06)" },
+            ticks: { color: "#64748b", maxTicksLimit: 7, font: { size: 10 } }
           },
           yTemp: {
             type: "linear",
             display: true,
             position: "left",
-            title: { display: true, text: "Temp (°C)", color: "#94a3b8", font: { size: 10 } },
-            grid: { color: "rgba(255, 255, 255, 0.06)" },
-            ticks: { color: "#cbd5e1", font: { size: 10 } },
+            title: { display: true, text: "Temp (°C)", color: "#475569", font: { size: 10, weight: "bold" } },
+            grid: { color: "rgba(0, 0, 0, 0.06)" },
+            ticks: { color: "#334155", font: { size: 10 } },
             min: 40,
             max: 100
           },
@@ -109,16 +109,16 @@ document.addEventListener("DOMContentLoaded", () => {
             type: "linear",
             display: true,
             position: "right",
-            title: { display: true, text: "Flow (L/hr)", color: "#94a3b8", font: { size: 10 } },
+            title: { display: true, text: "Flow (L/hr)", color: "#475569", font: { size: 10, weight: "bold" } },
             grid: { drawOnChartArea: false },
-            ticks: { color: "#818cf8", font: { size: 10 } },
+            ticks: { color: "#4f46e5", font: { size: 10 } },
             min: 0,
             max: 40000
           }
         },
         plugins: {
           legend: {
-            labels: { color: "#cbd5e1", boxWidth: 10, padding: 10, font: { size: 11 } }
+            labels: { color: "#1e293b", boxWidth: 10, padding: 10, font: { size: 11, weight: "bold" } }
           }
         }
       }
