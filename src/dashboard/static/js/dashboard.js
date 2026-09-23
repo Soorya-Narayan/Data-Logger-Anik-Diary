@@ -294,8 +294,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const testReadOutput = document.getElementById("test-read-output");
 
   const fields = [
-    "flow_rate", "temp_holding_in", "temp_holding_out", "temp_hot_water",
-    "temp_chilled_water", "fdv1_status", "fdv2_status", "cip_status", "product_name"
+    "milk_flow", "holding_in_temp", "holding_out_temp", "product",
+    "status", "fdv1_status", "fdv2_status", "cip_status"
   ];
 
   const btnMinimizeKiosk = document.getElementById("btn-minimize-kiosk");

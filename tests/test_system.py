@@ -176,6 +176,51 @@ class TestPasteurizerSystem(unittest.TestCase):
         self.assertTrue(report_file.exists())
         self.assertTrue(report_file.stat().st_size > 1000)
 
+    def test_plc_tag_auto_match_and_config_save(self):
+        """Verify heuristic auto-matching and tags.json structural integrity."""
+        from src.plc.discovery import auto_match_tags, save_and_apply_plc_config
+        import json
+
+        # Simulated tags found on Micro850
+        discovered = [
+            "FIT_101_FlowRate",
+            "TT_101_HoldingInTemp",
+            "TT_102_HoldingOutTemp",
+            "Recipe_ProductName",
+            "System_ProcessStatus",
+            "FDV1_ForwardStatus",
+            "FDV1_DiversionReason",
+            "FDV2_ForwardStatus",
+            "FDV2_DiversionReason",
+            "CIP_SystemActive",
+            "CIP_CurrentStepName"
+        ]
+
+        matched = auto_match_tags(discovered)
+        self.assertEqual(matched["milk_flow"], "FIT_101_FlowRate")
+        self.assertEqual(matched["holding_in_temp"], "TT_101_HoldingInTemp")
+        self.assertEqual(matched["holding_out_temp"], "TT_102_HoldingOutTemp")
+        self.assertEqual(matched["product"], "Recipe_ProductName")
+        self.assertEqual(matched["fdv1_status"], "FDV1_ForwardStatus")
+        self.assertEqual(matched["cip_status"], "CIP_SystemActive")
+
+        # Test config save
+        res = save_and_apply_plc_config(
+            ip_address="192.168.1.99",
+            tag_mapping=matched,
+            mode="mock",
+            restart_service=False
+        )
+        self.assertTrue(res["success"])
+        self.assertEqual(res["ip"], "192.168.1.99")
+
+        # Verify tags.json still has nested "tags" structure required by LivePLCClient
+        with open("config/tags.json", "r") as f:
+            saved_tags = json.load(f)
+        self.assertIn("tags", saved_tags)
+        self.assertIn("milk_flow", saved_tags["tags"])
+        self.assertEqual(saved_tags["tags"]["milk_flow"]["plc_tag"], "FIT_101_FlowRate")
+
 
 if __name__ == "__main__":
     unittest.main()

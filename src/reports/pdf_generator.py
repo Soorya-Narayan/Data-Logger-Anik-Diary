@@ -56,12 +56,17 @@ class NumberedCanvas(canvas.Canvas):
         self.restoreState()
 
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
+
 class PDFReportGenerator:
     """Generates landscape audit-grade PDF reports with corporate branding."""
 
     def __init__(self, db_manager: DatabaseManager, output_dir: str = "reports", plant_info: Optional[dict] = None):
         self.db = db_manager
         self.output_dir = Path(output_dir)
+        if not self.output_dir.is_absolute():
+            self.output_dir = PROJECT_ROOT / self.output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.plant_info = plant_info or {
             "name": "Anik Dairy - Bhopal",
@@ -69,14 +74,14 @@ class PDFReportGenerator:
             "reference_line": "PHE-3"
         }
         
-        # Asset paths
-        self.anik_logo_path = Path("docs/assets/anik_logo.png")
-        if not self.anik_logo_path.exists():
-            self.anik_logo_path = Path("src/dashboard/static/img/anik_logo.png")
+        # Absolute asset paths
+        anik_p1 = PROJECT_ROOT / "docs/assets/anik_logo.png"
+        anik_p2 = PROJECT_ROOT / "src/dashboard/static/img/anik_logo.png"
+        self.anik_logo_path = anik_p1 if anik_p1.exists() else anik_p2
             
-        self.goose_logo_path = Path("docs/assets/goose_logo.png")
-        if not self.goose_logo_path.exists():
-            self.goose_logo_path = Path("src/dashboard/static/img/goose_logo.png")
+        goose_p1 = PROJECT_ROOT / "docs/assets/goose_logo.png"
+        goose_p2 = PROJECT_ROOT / "src/dashboard/static/img/goose_logo.png"
+        self.goose_logo_path = goose_p1 if goose_p1.exists() else goose_p2
 
     def generate_pdf(
         self,
@@ -184,14 +189,20 @@ class PDFReportGenerator:
         # Logo 1: Anik Logo (Left)
         anik_img = None
         if self.anik_logo_path.exists():
-            anik_img = Image(str(self.anik_logo_path), width=1.1 * inch, height=0.6 * inch)
-            anik_img.hAlign = "LEFT"
+            try:
+                anik_img = Image(str(self.anik_logo_path), width=1.1 * inch, height=0.6 * inch)
+                anik_img.hAlign = "LEFT"
+            except Exception as e:
+                logger.warning("Could not load Anik logo for PDF: %s", e)
 
         # Logo 2: Goose Logo (Right)
         goose_img = None
         if self.goose_logo_path.exists():
-            goose_img = Image(str(self.goose_logo_path), width=1.9 * inch, height=0.48 * inch)
-            goose_img.hAlign = "RIGHT"
+            try:
+                goose_img = Image(str(self.goose_logo_path), width=1.9 * inch, height=0.48 * inch)
+                goose_img.hAlign = "RIGHT"
+            except Exception as e:
+                logger.warning("Could not load Goose logo for PDF: %s", e)
 
         header_center = [
             Paragraph(f"<b>{self.plant_info.get('name', 'ANIK DAIRY - BHOPAL')}</b>", title_style),

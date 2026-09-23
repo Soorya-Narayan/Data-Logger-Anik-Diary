@@ -14,37 +14,40 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 CONFIG_PATH = PROJECT_ROOT / "config/config.yaml"
 TAGS_PATH = PROJECT_ROOT / "config/tags.json"
 
-# Heuristic patterns for automatic tag matching
+# Heuristic patterns for automatic tag matching matching canonical keys in tags.json
 TAG_MATCH_RULES = {
-    "flow_rate": [
+    "milk_flow": [
         r"flow.*rate", r"fit.*101", r"fit_101", r"milk.*flow", r"flow", r"lph", r"discharge"
     ],
-    "temp_holding_in": [
+    "holding_in_temp": [
         r"holding.*in", r"tt.*101", r"tt_101", r"temp.*in", r"inlet.*temp", r"pasteur.*in"
     ],
-    "temp_holding_out": [
+    "holding_out_temp": [
         r"holding.*out", r"tt.*102", r"tt_102", r"temp.*out", r"outlet.*temp", r"pasteur.*out"
     ],
-    "temp_hot_water": [
-        r"hot.*water", r"water.*temp", r"hw.*temp", r"tt.*103", r"tt_103", r"steam"
+    "product": [
+        r"recipe.*product", r"product.*name", r"recipe", r"batch.*name", r"product", r"prod.*id", r"material"
     ],
-    "temp_chilled_water": [
-        r"chill.*water", r"cw.*temp", r"glycol", r"tt.*104", r"tt_104", r"regen"
+    "status": [
+        r"system.*process", r"process.*status", r"status.*desc", r"sys.*status"
     ],
     "fdv1_status": [
-        r"fdv.*1", r"fdv1", r"divert.*1", r"inlet.*divert", r"valve.*1"
+        r"fdv1.*forward", r"fdv.*1", r"fdv1", r"divert.*1", r"inlet.*divert", r"valve.*1"
+    ],
+    "fdv1_reason": [
+        r"fdv1.*reason", r"divert1.*reason"
     ],
     "fdv2_status": [
-        r"fdv.*2", r"fdv2", r"divert.*2", r"outlet.*divert", r"valve.*2"
+        r"fdv2.*forward", r"fdv.*2", r"fdv2", r"divert.*2", r"outlet.*divert", r"valve.*2"
+    ],
+    "fdv2_reason": [
+        r"fdv2.*reason", r"divert2.*reason"
     ],
     "cip_status": [
-        r"cip.*status", r"cip.*state", r"cip.*active", r"cip.*mode", r"cip"
+        r"cip.*active", r"cip.*system", r"cip.*status", r"cip.*state", r"cip.*mode", r"cip"
     ],
-    "product_name": [
-        r"product", r"recipe", r"batch.*name", r"prod.*id", r"material"
-    ],
-    "operator_id": [
-        r"operator", r"user.*id", r"badge", r"shift.*op"
+    "cip_step": [
+        r"cip.*step", r"cip.*phase"
     ]
 }
 
@@ -207,7 +210,7 @@ def save_and_apply_plc_config(
     Saves the new IP and Tag mapping to config/config.yaml and config/tags.json,
     and restarts the poller service if requested.
     """
-    # 1. Update config/tags.json
+    # 1. Update config/tags.json preserving {"_comment": ..., "tags": {...}} structure
     existing_tags = {}
     if TAGS_PATH.exists():
         try:
@@ -216,7 +219,24 @@ def save_and_apply_plc_config(
         except Exception:
             existing_tags = {}
 
-    existing_tags.update(tag_mapping)
+    if "tags" not in existing_tags or not isinstance(existing_tags["tags"], dict):
+        existing_tags["tags"] = {}
+
+    for field, plc_tag in tag_mapping.items():
+        if not plc_tag:
+            continue
+        if field in existing_tags["tags"] and isinstance(existing_tags["tags"][field], dict):
+            existing_tags["tags"][field]["plc_tag"] = plc_tag
+        else:
+            dtype = "REAL" if ("temp" in field or "flow" in field) else ("BOOL" if "status" in field else "STRING")
+            unit = "°C" if "temp" in field else ("L/hr" if "flow" in field else "")
+            existing_tags["tags"][field] = {
+                "plc_tag": plc_tag,
+                "data_type": dtype,
+                "unit": unit,
+                "description": f"Configured {field} sensor/actuator"
+            }
+
     with open(TAGS_PATH, "w") as f:
         json.dump(existing_tags, f, indent=2)
 

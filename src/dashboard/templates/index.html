@@ -230,72 +230,64 @@
             <div class="map-item">
               <label>Milk Flow (FIT-101):</label>
               <div class="select-wrapper">
-                <input type="text" id="tag-flow_rate" class="tag-input" placeholder="e.g. FIT_101_FlowRate">
-                <select id="sel-flow_rate" class="tag-dropdown hidden"></select>
+                <input type="text" id="tag-milk_flow" class="tag-input" placeholder="e.g. FIT_101_FlowRate">
+                <select id="sel-milk_flow" class="tag-dropdown hidden"></select>
               </div>
             </div>
             <!-- Holding In -->
             <div class="map-item">
               <label>Holding In Temp (TT-101):</label>
               <div class="select-wrapper">
-                <input type="text" id="tag-temp_holding_in" class="tag-input" placeholder="e.g. TT_101_HoldingIn">
-                <select id="sel-temp_holding_in" class="tag-dropdown hidden"></select>
+                <input type="text" id="tag-holding_in_temp" class="tag-input" placeholder="e.g. TT_101_HoldingInTemp">
+                <select id="sel-holding_in_temp" class="tag-dropdown hidden"></select>
               </div>
             </div>
             <!-- Holding Out -->
             <div class="map-item">
               <label>Holding Out Temp (TT-102):</label>
               <div class="select-wrapper">
-                <input type="text" id="tag-temp_holding_out" class="tag-input" placeholder="e.g. TT_102_HoldingOut">
-                <select id="sel-temp_holding_out" class="tag-dropdown hidden"></select>
-              </div>
-            </div>
-            <!-- Hot Water -->
-            <div class="map-item">
-              <label>Hot Water Temp (TT-103):</label>
-              <div class="select-wrapper">
-                <input type="text" id="tag-temp_hot_water" class="tag-input" placeholder="e.g. TT_103_HotWater">
-                <select id="sel-temp_hot_water" class="tag-dropdown hidden"></select>
-              </div>
-            </div>
-            <!-- Chilled Water -->
-            <div class="map-item">
-              <label>Chilled Water Temp (TT-104):</label>
-              <div class="select-wrapper">
-                <input type="text" id="tag-temp_chilled_water" class="tag-input" placeholder="e.g. TT_104_ChilledWater">
-                <select id="sel-temp_chilled_water" class="tag-dropdown hidden"></select>
-              </div>
-            </div>
-            <!-- FDV 1 -->
-            <div class="map-item">
-              <label>FDV-1 Inlet Divert Valve:</label>
-              <div class="select-wrapper">
-                <input type="text" id="tag-fdv1_status" class="tag-input" placeholder="e.g. FDV1_Status">
-                <select id="sel-fdv1_status" class="tag-dropdown hidden"></select>
-              </div>
-            </div>
-            <!-- FDV 2 -->
-            <div class="map-item">
-              <label>FDV-2 Outlet Divert Valve:</label>
-              <div class="select-wrapper">
-                <input type="text" id="tag-fdv2_status" class="tag-input" placeholder="e.g. FDV2_Status">
-                <select id="sel-fdv2_status" class="tag-dropdown hidden"></select>
-              </div>
-            </div>
-            <!-- CIP -->
-            <div class="map-item">
-              <label>CIP Sequence State:</label>
-              <div class="select-wrapper">
-                <input type="text" id="tag-cip_status" class="tag-input" placeholder="e.g. CIP_Active_Step">
-                <select id="sel-cip_status" class="tag-dropdown hidden"></select>
+                <input type="text" id="tag-holding_out_temp" class="tag-input" placeholder="e.g. TT_102_HoldingOutTemp">
+                <select id="sel-holding_out_temp" class="tag-dropdown hidden"></select>
               </div>
             </div>
             <!-- Recipe / Product -->
             <div class="map-item">
               <label>Product / Recipe Name:</label>
               <div class="select-wrapper">
-                <input type="text" id="tag-product_name" class="tag-input" placeholder="e.g. Current_Recipe_Name">
-                <select id="sel-product_name" class="tag-dropdown hidden"></select>
+                <input type="text" id="tag-product" class="tag-input" placeholder="e.g. Recipe_ProductName">
+                <select id="sel-product" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- Process Status -->
+            <div class="map-item">
+              <label>Process State Text:</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-status" class="tag-input" placeholder="e.g. System_ProcessStatus">
+                <select id="sel-status" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- FDV 1 Status -->
+            <div class="map-item">
+              <label>FDV-1 Inlet Divert Valve:</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-fdv1_status" class="tag-input" placeholder="e.g. FDV1_ForwardStatus">
+                <select id="sel-fdv1_status" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- FDV 2 Status -->
+            <div class="map-item">
+              <label>FDV-2 Outlet Divert Valve:</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-fdv2_status" class="tag-input" placeholder="e.g. FDV2_ForwardStatus">
+                <select id="sel-fdv2_status" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- CIP Status -->
+            <div class="map-item">
+              <label>CIP Sequence State:</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-cip_status" class="tag-input" placeholder="e.g. CIP_SystemActive">
+                <select id="sel-cip_status" class="tag-dropdown hidden"></select>
               </div>
             </div>
           </div>

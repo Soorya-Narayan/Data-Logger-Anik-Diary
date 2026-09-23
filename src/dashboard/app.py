@@ -289,19 +289,25 @@ def export_pdf():
 def get_current_plc_config():
     """Returns current PLC IP, mode, and tag configuration."""
     cfg = load_yaml(CONFIG_PATH)
-    current_tags = {}
+    flat_tags = {}
     if TAGS_PATH.exists():
         try:
             with open(TAGS_PATH, "r") as f:
-                current_tags = json.load(f)
+                data = json.load(f)
+                tags_dict = data.get("tags", {}) if isinstance(data, dict) else {}
+                for k, v in tags_dict.items():
+                    if isinstance(v, dict):
+                        flat_tags[k] = v.get("plc_tag", "")
+                    else:
+                        flat_tags[k] = str(v)
         except Exception:
-            current_tags = {}
+            flat_tags = {}
 
     return jsonify({
         "status": "ok",
         "mode": cfg.get("plc", {}).get("mode", "mock"),
         "ip": cfg.get("plc", {}).get("ip", "192.168.1.50"),
-        "tags": current_tags
+        "tags": flat_tags
     })
 
 
