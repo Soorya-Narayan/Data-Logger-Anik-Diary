@@ -4,8 +4,8 @@ After=network.target pasteurizer-poller.service
 
 [Service]
 Type=oneshot
-User=goosepi
-Group=goosepi
-WorkingDirectory=/home/goosepi/pasteurizer-logger
+User=elanadu
+Group=elanadu
+WorkingDirectory=/home/elanadu/pasteurizer-logger
 Environment="PYTHONUNBUFFERED=1"
-ExecStart=/home/goosepi/pasteurizer-logger/venv/bin/python src/reports/scheduler.py
+ExecStart=/home/elanadu/pasteurizer-logger/venv/bin/python src/reports/scheduler.py

@@ -72,57 +72,43 @@ This project provides a complete, lightweight, and resilient data logging soluti
 ### Flashing with Raspberry Pi Imager
 1. Open **Raspberry Pi Imager** on your computer.
 2. Select:
-   - **Device**: `Raspberry Pi 4`
+   - **Device**: `Raspberry Pi 5`
    - **OS**: `Raspberry Pi OS Lite (64-bit)` (Bookworm)
-   - **Storage**: Your 32GB microSD card
+   - **Storage**: Your microSD card
 3. Click **Edit Settings** (or the Gear icon / `Ctrl+Shift+X`):
    - **General Tab**:
-     - **Hostname**: `anikdiary` (accessible on LAN as `anikdiary.local`)
-     - **Username**: `goosepi`
-     - **Password**: `Anik@#$12345`
+     - **Hostname**: `heatwatch` (accessible on LAN as `heatwatch.local` or `192.168.1.169`)
+     - **Username**: `elanadu`
+     - **Password**: `Elanadu@#$12345`
      - **Wireless LAN**:
-       - **SSID**: `gooseind_5G`
-       - **Password**: `Mannar@200`
+       - **SSID**: `Goose-5G`
        - **Wireless LAN country**: `IN`
      - **Timezone**: `Asia/Kolkata`
+     - **Keyboard Layout**: `in`
    - **Services Tab**:
      - Check **Enable SSH** (Use password authentication).
-     - *(Optional)* Under **Raspberry Pi Connect**, paste the Auth Key:
-       `rpuak_fKp3etgZdqgTA48dyZgcrbTf`
 4. Click **Save** and **Write**.
 
 ---
 
 ### First Boot & Remote Access
 
-1. Insert the microSD card into the Pi 4B and power it up with the official USB-C adapter.
-2. The Pi will automatically connect to `gooseind_5G` (or Ethernet switch if plugged in).
-3. Connect via SSH from your computer:
+1. Insert the microSD card into the Raspberry Pi 5 and connect power via official USB-C PD power supply.
+2. The Pi will connect to `Goose-5G` or Ethernet.
+3. Connect via SSH directly from your terminal:
    ```bash
-   ssh goosepi@anikdiary.local
-   # Password: Anik@#$12345
+   ssh elanadu@heatwatch.local
+   # OR connect directly via IP:
+   ssh elanadu@192.168.1.169
+   # Password: Elanadu@#$12345
    ```
-
-### Raspberry Pi Connect (Remote Cloud Access from Pune)
-To enable browser-based remote terminal and access to the Pi from anywhere without port forwarding:
-```bash
-sudo apt update
-sudo apt install -y rpi-connect-lite
-
-# Sign in using your user authorization key:
-rpi-connect signin rpuak_fKp3etgZdqgTA48dyZgcrbTf
-
-# Verify connection:
-rpi-connect status
-```
-*Once linked, you can securely access the Pi terminal directly from https://connect.raspberrypi.com/*
 
 ---
 
 ### Hardware Optimization for MicroSD Card Longevity
 Run the included optimization script to configure RAM-based volatile logging and tmpfs:
 ```bash
-cd /home/goosepi/pasteurizer-logger
+cd /home/elanadu/pasteurizer-logger
 sudo bash scripts/optimize_sd.sh
 ```
 This script:
@@ -134,10 +120,10 @@ This script:
 
 ## Step 2: Python Environment Setup
 
-Clone or copy the project files to the Pi under `/home/goosepi/pasteurizer-logger`:
+Clone or copy the project files to the Pi under `/home/elanadu/pasteurizer-logger`:
 
 ```bash
-cd /home/goosepi/pasteurizer-logger
+cd /home/elanadu/pasteurizer-logger
 chmod +x scripts/*.sh
 
 # Run automated installer:

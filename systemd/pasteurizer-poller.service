@@ -5,11 +5,11 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=goosepi
-Group=goosepi
-WorkingDirectory=/home/goosepi/pasteurizer-logger
+User=elanadu
+Group=elanadu
+WorkingDirectory=/home/elanadu/pasteurizer-logger
 Environment="PYTHONUNBUFFERED=1"
-ExecStart=/home/goosepi/pasteurizer-logger/venv/bin/python src/poller.py
+ExecStart=/home/elanadu/pasteurizer-logger/venv/bin/python src/poller.py
 Restart=always
 RestartSec=5s
 

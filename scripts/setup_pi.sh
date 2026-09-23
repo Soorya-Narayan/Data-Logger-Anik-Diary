@@ -10,7 +10,7 @@ echo "=== [1/5] Updating System Packages ==="
 sudo apt-get update
 sudo apt-get install -y python3-venv python3-pip python3-dev git sqlite3 curl
 
-INSTALL_DIR="/home/goosepi/pasteurizer-logger"
+INSTALL_DIR="/home/elanadu/pasteurizer-logger"
 CURRENT_DIR="$(pwd)"
 
 if [ "$CURRENT_DIR" != "$INSTALL_DIR" ]; then
