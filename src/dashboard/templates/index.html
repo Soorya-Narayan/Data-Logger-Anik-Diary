@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pasteurizer Live SCADA Telemetry</title>
-  <link rel="stylesheet" href="/static/css/style.css?v=light1">
+  <link rel="stylesheet" href="/static/css/style.css?v=light3">
   <!-- Chart.js for live trends -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -41,6 +41,11 @@
           <button id="btn-export-excel" class="btn-export btn-export-excel" title="Download PHE-3 formatted Excel workbook">Excel</button>
           <button id="btn-export-pdf" class="btn-export btn-export-pdf" title="Download PDF quality audit report with logos">PDF</button>
         </div>
+
+        <!-- Minimize Kiosk Button -->
+        <button id="btn-minimize-kiosk" class="btn-minimize" title="Minimize Window to Desktop">
+          🗕 Desktop
+        </button>
 
         <!-- PLC Remote Setup Button -->
         <button id="btn-open-settings" class="btn-settings" title="Auto-Detect PLC & Map Tags">
@@ -322,6 +327,6 @@
     </div>
   </div>
 
-  <script src="/static/js/dashboard.js?v=light2"></script>
+  <script src="/static/js/dashboard.js?v=light3"></script>
 </body>
 </html>

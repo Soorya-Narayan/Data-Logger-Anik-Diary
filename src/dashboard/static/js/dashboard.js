@@ -298,6 +298,26 @@ document.addEventListener("DOMContentLoaded", () => {
     "temp_chilled_water", "fdv1_status", "fdv2_status", "cip_status", "product_name"
   ];
 
+  const btnMinimizeKiosk = document.getElementById("btn-minimize-kiosk");
+  if (btnMinimizeKiosk) {
+    btnMinimizeKiosk.addEventListener("click", async () => {
+      // Exit browser fullscreen if active
+      if (document.fullscreenElement) {
+        try {
+          await document.exitFullscreen();
+        } catch (e) {
+          console.warn("Fullscreen exit error:", e);
+        }
+      }
+      // Send backend signal to minimize on Wayland / desktop
+      try {
+        await fetch("/api/system/minimize-kiosk", { method: "POST" });
+      } catch (err) {
+        console.warn("Minimize API error:", err);
+      }
+    });
+  }
+
   // Open modal & load current config
   if (btnOpenSettings) {
     btnOpenSettings.addEventListener("click", async () => {

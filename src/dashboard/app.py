@@ -158,6 +158,22 @@ def api_system():
     })
 
 
+@app.route("/api/system/minimize-kiosk", methods=["POST"])
+def api_minimize_kiosk():
+    """Minimizes the kiosk / browser window on the Raspberry Pi display."""
+    import subprocess
+    cmd = (
+        "WAYLAND_DISPLAY=wayland-0 XDG_RUNTIME_DIR=/run/user/1000 wlrctl toplevel minimize 2>/dev/null || "
+        "xdotool key super+d 2>/dev/null || true"
+    )
+    try:
+        subprocess.Popen(cmd, shell=True)
+        return jsonify({"status": "ok", "message": "Minimize signal sent"})
+    except Exception as exc:
+        return jsonify({"status": "error", "error": str(exc)}), 500
+
+
+
 @app.route("/api/export/csv")
 def export_csv():
     """Export process telemetry as CSV."""
