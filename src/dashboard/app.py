@@ -7,7 +7,11 @@ import os
 import sys
 import yaml
 import json
-import psutil
+try:
+    import psutil
+except ImportError:
+    psutil = None
+
 from datetime import datetime, timedelta
 from pathlib import Path
 import csv
@@ -18,8 +22,6 @@ from flask import Flask, render_template, jsonify, request, send_file, Response
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from src.storage import DatabaseManager
-from src.reports.generator import ExcelReportGenerator
-from src.reports.pdf_generator import PDFReportGenerator
 
 app = Flask(__name__)
 
@@ -42,8 +44,20 @@ if not Path(db_path).is_absolute():
     db_path = str(PROJECT_ROOT / db_path)
 
 db = DatabaseManager(db_path=db_path)
-excel_gen = ExcelReportGenerator(db_manager=db, output_dir=str(REPORTS_DIR), plant_info=config.get("plant"))
-pdf_gen = PDFReportGenerator(db_manager=db, output_dir=str(REPORTS_DIR), plant_info=config.get("plant"))
+
+excel_gen = None
+pdf_gen = None
+try:
+    from src.reports.generator import ExcelReportGenerator
+    excel_gen = ExcelReportGenerator(db_manager=db, output_dir=str(REPORTS_DIR), plant_info=config.get("plant"))
+except ImportError as err:
+    print(f"[Warning] Excel generator not loaded ({err}). Install pandas and openpyxl.")
+
+try:
+    from src.reports.pdf_generator import PDFReportGenerator
+    pdf_gen = PDFReportGenerator(db_manager=db, output_dir=str(REPORTS_DIR), plant_info=config.get("plant"))
+except ImportError as err:
+    print(f"[Warning] PDF generator not loaded ({err}). Install reportlab and pillow.")
 
 
 @app.route("/")
@@ -116,9 +130,12 @@ def api_history():
 @app.route("/api/system")
 def api_system():
     """Raspberry Pi system health indicators (memory, CPU, disk, thermal)."""
-    cpu_usage = psutil.cpu_percent(interval=None)
-    mem = psutil.virtual_memory()
-    disk = psutil.disk_usage("/")
+    cpu_usage = psutil.cpu_percent(interval=None) if psutil else 0.0
+    mem_used = round(psutil.virtual_memory().used / (1024 * 1024), 1) if psutil else 0.0
+    mem_total = round(psutil.virtual_memory().total / (1024 * 1024), 1) if psutil else 0.0
+    disk_free = round(psutil.disk_usage("/").free / (1024 * 1024 * 1024), 2) if psutil else 0.0
+    disk_total = round(psutil.disk_usage("/").total / (1024 * 1024 * 1024), 2) if psutil else 0.0
+    disk_pct = psutil.disk_usage("/").percent if psutil else 0.0
 
     # Read Raspberry Pi CPU temperature if available
     cpu_temp = None
@@ -133,11 +150,11 @@ def api_system():
     return jsonify({
         "cpu_usage_pct": cpu_usage,
         "cpu_temp_c": cpu_temp,
-        "memory_used_mb": round(mem.used / (1024 * 1024), 1),
-        "memory_total_mb": round(mem.total / (1024 * 1024), 1),
-        "disk_free_gb": round(disk.free / (1024 * 1024 * 1024), 2),
-        "disk_total_gb": round(disk.total / (1024 * 1024 * 1024), 2),
-        "disk_used_pct": disk.percent
+        "memory_used_mb": mem_used,
+        "memory_total_mb": mem_total,
+        "disk_free_gb": disk_free,
+        "disk_total_gb": disk_total,
+        "disk_used_pct": disk_pct
     })
 
 
