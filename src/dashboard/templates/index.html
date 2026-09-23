@@ -4,21 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pasteurizer Live SCADA Telemetry</title>
-  <link rel="stylesheet" href="/static/css/style.css?v=light3">
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css?v=liquid1">
   <!-- Chart.js for live trends -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="no-scroll-body">
   <div class="app-layout">
-    <!-- 1. Top Navbar -->
-    <header class="navbar">
+    <!-- 1. Top Liquid Glass Navbar -->
+    <header class="navbar glass-card">
       <div class="navbar-left">
         <!-- Anik Dairy Logo -->
         <div class="logo-container logo-container-anik">
           <img src="/static/img/anik_logo.png" alt="Anik Dairy Logo" class="brand-logo anik-logo">
         </div>
         
-        <!-- Vertical Separator Line -->
+        <!-- Liquid Glass Separator -->
         <div class="brand-divider"></div>
         
         <!-- Goose Logo -->
@@ -28,33 +32,82 @@
       </div>
 
       <div class="navbar-right">
-        <!-- Export Controls Group -->
-        <div class="export-group">
-          <span class="export-label">Export Data:</span>
-          <select id="export-range" class="export-select" title="Select logging duration to export">
-            <option value="1">Last 1 Hour</option>
-            <option value="4">Last 4 Hours</option>
-            <option value="8" selected>Shift (8 Hours)</option>
-            <option value="24">Full Day (24 Hours)</option>
-          </select>
-          <button id="btn-export-csv" class="btn-export btn-export-csv" title="Download raw CSV telemetry">CSV</button>
-          <button id="btn-export-excel" class="btn-export btn-export-excel" title="Download PHE-3 formatted Excel workbook">Excel</button>
-          <button id="btn-export-pdf" class="btn-export btn-export-pdf" title="Download PDF quality audit report with logos">PDF</button>
+        <!-- De-clustered Liquid Glass Reports Dropdown -->
+        <div class="reports-dropdown-wrapper" id="reports-dropdown-wrapper">
+          <button id="btn-reports-menu" class="btn-glass-action btn-reports-trigger" title="Export Reports & Telemetry">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.2" fill="none">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Reports</span>
+            <span class="chevron-icon">▾</span>
+          </button>
+
+          <!-- Glass Floating Popover -->
+          <div id="reports-menu-popover" class="glass-popover hidden">
+            <div class="popover-section">
+              <div class="popover-label">PERIOD DURATION</div>
+              <div class="segmented-control" id="export-segmented">
+                <button type="button" class="seg-btn" data-hours="1">1h</button>
+                <button type="button" class="seg-btn" data-hours="4">4h</button>
+                <button type="button" class="seg-btn active" data-hours="8">8h (Shift)</button>
+                <button type="button" class="seg-btn" data-hours="24">24h</button>
+              </div>
+              <input type="hidden" id="export-range" value="8">
+            </div>
+
+            <div class="popover-divider"></div>
+
+            <div class="popover-options">
+              <button type="button" id="btn-export-pdf" class="popover-item item-pdf">
+                <div class="item-badge-pill badge-pdf">PDF</div>
+                <div class="item-text">
+                  <div class="item-title">Quality Audit Report</div>
+                  <div class="item-desc">Print-ready PDF with corporate branding</div>
+                </div>
+              </button>
+              
+              <button type="button" id="btn-export-excel" class="popover-item item-excel">
+                <div class="item-badge-pill badge-excel">XLS</div>
+                <div class="item-text">
+                  <div class="item-title">SCADA Telemetry Workbook</div>
+                  <div class="item-desc">Excel sheets with charts & KPI summary</div>
+                </div>
+              </button>
+              
+              <button type="button" id="btn-export-csv" class="popover-item item-csv">
+                <div class="item-badge-pill badge-csv">CSV</div>
+                <div class="item-text">
+                  <div class="item-title">Raw Telemetry Dataset</div>
+                  <div class="item-desc">Standard 1-second sampled CSV log</div>
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Minimize Kiosk Button -->
-        <button id="btn-minimize-kiosk" class="btn-minimize" title="Minimize Window to Desktop">
-          🗕 Desktop
+        <button id="btn-minimize-kiosk" class="btn-glass-action btn-minimize" title="Minimize Window to Desktop">
+          <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5" fill="none">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Desktop</span>
         </button>
 
         <!-- PLC Remote Setup Button -->
-        <button id="btn-open-settings" class="btn-settings" title="Auto-Detect PLC & Map Tags">
-          ⚙️ PLC Setup
+        <button id="btn-open-settings" class="btn-glass-action btn-settings" title="Auto-Detect PLC & Map Tags">
+          <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>PLC Setup</span>
         </button>
 
         <!-- Mode Badge -->
         <div id="mode-badge" class="badge badge-mode {{ 'badge-mock' if plc_mode == 'MOCK' else 'badge-live' }}">
-          {{ plc_mode }}: {{ plc_ip if plc_mode == 'LIVE' else 'SCADA Sim' }}
+          <span class="mode-dot"></span>
+          <span>{{ plc_mode }}: {{ plc_ip if plc_mode == 'LIVE' else 'SCADA Sim' }}</span>
         </div>
 
         <!-- Digital Clock -->
@@ -319,6 +372,6 @@
     </div>
   </div>
 
-  <script src="/static/js/dashboard.js?v=light3"></script>
+  <script src="/static/js/dashboard.js?v=liquid1"></script>
 </body>
 </html>

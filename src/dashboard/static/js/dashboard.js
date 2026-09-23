@@ -43,6 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize Chart.js
   function initChart() {
+    if (window.Chart) {
+      Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", sans-serif';
+    }
     const ctx = document.getElementById("trendChart").getContext("2d");
     trendChart = new Chart(ctx, {
       type: "line",
@@ -250,9 +253,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // =========================================================================
+  // Liquid Glass Reports Popover & Segmented Controls
+  // =========================================================================
+  const btnReportsMenu = document.getElementById("btn-reports-menu");
+  const reportsPopover = document.getElementById("reports-menu-popover");
+  const reportsWrapper = document.getElementById("reports-dropdown-wrapper");
+  const segButtons = document.querySelectorAll(".segmented-control .seg-btn");
+
+  if (btnReportsMenu && reportsPopover) {
+    btnReportsMenu.addEventListener("click", (e) => {
+      e.stopPropagation();
+      reportsPopover.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (reportsWrapper && !reportsWrapper.contains(e.target)) {
+        reportsPopover.classList.add("hidden");
+      }
+    });
+  }
+
+  segButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      segButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      if (exportRange) {
+        exportRange.value = btn.dataset.hours;
+      }
+    });
+  });
+
   // Export handlers
   function triggerExport(format) {
     const hours = exportRange ? exportRange.value : 8;
+    if (reportsPopover) reportsPopover.classList.add("hidden");
     const url = `/api/export/${format}?hours=${hours}`;
     window.location.href = url;
   }
