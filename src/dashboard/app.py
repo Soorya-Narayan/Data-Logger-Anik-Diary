@@ -265,8 +265,87 @@ def export_pdf():
     return send_file(str(path.resolve()), as_attachment=True)
 
 
+# ==============================================================================
+# PLC Remote Configuration & Tag Auto-Discovery Endpoints
+# ==============================================================================
+
+@app.route("/api/plc/current-config")
+def get_current_plc_config():
+    """Returns current PLC IP, mode, and tag configuration."""
+    cfg = load_yaml(CONFIG_PATH)
+    current_tags = {}
+    if TAGS_PATH.exists():
+        try:
+            with open(TAGS_PATH, "r") as f:
+                current_tags = json.load(f)
+        except Exception:
+            current_tags = {}
+
+    return jsonify({
+        "status": "ok",
+        "mode": cfg.get("plc", {}).get("mode", "mock"),
+        "ip": cfg.get("plc", {}).get("ip", "192.168.1.50"),
+        "tags": current_tags
+    })
+
+
+@app.route("/api/plc/discover")
+def api_discover_plcs():
+    """Broadcasts to find EtherNet/IP devices on the subnet."""
+    from src.plc.discovery import discover_plcs_on_network
+    devices = discover_plcs_on_network()
+    return jsonify({
+        "status": "ok",
+        "devices": devices,
+        "count": len(devices)
+    })
+
+
+@app.route("/api/plc/tags")
+def api_fetch_tags():
+    """Extracts all tags from the specified Micro850 PLC IP."""
+    ip = request.args.get("ip")
+    if not ip:
+        cfg = load_yaml(CONFIG_PATH)
+        ip = cfg.get("plc", {}).get("ip", "192.168.1.50")
+
+    from src.plc.discovery import fetch_tags_from_plc
+    result = fetch_tags_from_plc(ip)
+    return jsonify(result)
+
+
+@app.route("/api/plc/test-read", methods=["POST"])
+def api_test_read():
+    """Performs a live test read on mapped PLC tags."""
+    data = request.get_json() or {}
+    ip = data.get("ip")
+    tags = data.get("tags", {})
+    if not ip or not tags:
+        return jsonify({"success": False, "error": "Missing IP or tag mapping"}), 400
+
+    from src.plc.discovery import test_tag_read
+    res = test_tag_read(ip, tags)
+    return jsonify(res)
+
+
+@app.route("/api/plc/save-config", methods=["POST"])
+def api_save_plc_config():
+    """Saves new PLC IP and tags, switches to live, and restarts poller."""
+    data = request.get_json() or {}
+    ip = data.get("ip")
+    tags = data.get("tags", {})
+    mode = data.get("mode", "live")
+    if not ip:
+        return jsonify({"success": False, "error": "PLC IP is required"}), 400
+
+    from src.plc.discovery import save_and_apply_plc_config
+    res = save_and_apply_plc_config(ip, tags, mode=mode, restart_service=True)
+    return jsonify(res)
+
+
 if __name__ == "__main__":
     dash_cfg = config.get("dashboard", {})
     host = dash_cfg.get("host", "0.0.0.0")
     port = dash_cfg.get("port", 8080)
     app.run(host=host, port=port, debug=False)
+

@@ -277,6 +277,245 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // =========================================================================
+  // PLC Remote Configuration & Tag Auto-Discovery Handlers
+  // =========================================================================
+  const btnOpenSettings = document.getElementById("btn-open-settings");
+  const btnCloseSettings = document.getElementById("btn-close-settings");
+  const settingsModal = document.getElementById("settings-modal");
+  const cfgPlcIp = document.getElementById("cfg-plc-ip");
+  const btnScanNetwork = document.getElementById("btn-scan-network");
+  const btnFetchTags = document.getElementById("btn-fetch-tags");
+  const discoveryStatus = document.getElementById("discovery-status");
+  const discoveredDevicesList = document.getElementById("discovered-devices-list");
+  const btnTestRead = document.getElementById("btn-test-read");
+  const btnSavePlcConfig = document.getElementById("btn-save-plc-config");
+  const cfgTargetMode = document.getElementById("cfg-target-mode");
+  const testReadOutput = document.getElementById("test-read-output");
+
+  const fields = [
+    "flow_rate", "temp_holding_in", "temp_holding_out", "temp_hot_water",
+    "temp_chilled_water", "fdv1_status", "fdv2_status", "cip_status", "product_name"
+  ];
+
+  // Open modal & load current config
+  if (btnOpenSettings) {
+    btnOpenSettings.addEventListener("click", async () => {
+      settingsModal.classList.remove("hidden");
+      try {
+        const res = await fetch("/api/plc/current-config");
+        if (res.ok) {
+          const d = await res.json();
+          if (d.ip) cfgPlcIp.value = d.ip;
+          if (d.mode) cfgTargetMode.value = d.mode.toLowerCase();
+          if (d.tags) {
+            fields.forEach(f => {
+              const inp = document.getElementById(`tag-${f}`);
+              if (inp && d.tags[f]) inp.value = d.tags[f];
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch current PLC config:", err);
+      }
+    });
+  }
+
+  // Close modal
+  if (btnCloseSettings) {
+    btnCloseSettings.addEventListener("click", () => {
+      settingsModal.classList.add("hidden");
+    });
+  }
+  if (settingsModal) {
+    settingsModal.addEventListener("click", (e) => {
+      if (e.target === settingsModal) settingsModal.classList.add("hidden");
+    });
+  }
+
+  // 1. Scan Subnet
+  if (btnScanNetwork) {
+    btnScanNetwork.addEventListener("click", async () => {
+      discoveryStatus.className = "status-msg";
+      discoveryStatus.textContent = "Scanning subnet via EtherNet/IP broadcast (port 44818)...";
+      discoveredDevicesList.classList.add("hidden");
+      discoveredDevicesList.innerHTML = "";
+
+      try {
+        const res = await fetch("/api/plc/discover");
+        const json = await res.json();
+        const devs = json.devices || [];
+
+        if (devs.length === 0) {
+          discoveryStatus.className = "status-msg error";
+          discoveryStatus.textContent = "No EtherNet/IP devices detected. Ensure Ethernet cable is connected to PLC switch.";
+        } else {
+          discoveryStatus.className = "status-msg success";
+          discoveryStatus.textContent = `Found ${devs.length} device(s) on network! Click an IP to select:`;
+          discoveredDevicesList.classList.remove("hidden");
+
+          devs.forEach(dev => {
+            const item = document.createElement("div");
+            item.style.cssText = "padding: 4px 6px; cursor: pointer; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;";
+            item.innerHTML = `<strong>${dev.ip}</strong> <span>${dev.product_name} (${dev.vendor})</span>`;
+            item.addEventListener("click", () => {
+              cfgPlcIp.value = dev.ip;
+              discoveryStatus.textContent = `Selected PLC IP: ${dev.ip}`;
+            });
+            discoveredDevicesList.appendChild(item);
+          });
+        }
+      } catch (err) {
+        discoveryStatus.className = "status-msg error";
+        discoveryStatus.textContent = "Scan request failed: " + err.message;
+      }
+    });
+  }
+
+  // 2. Auto-Detect Tags from PLC
+  if (btnFetchTags) {
+    btnFetchTags.addEventListener("click", async () => {
+      const ip = cfgPlcIp.value.trim();
+      if (!ip) {
+        discoveryStatus.className = "status-msg error";
+        discoveryStatus.textContent = "Please enter or select a valid PLC IP address.";
+        return;
+      }
+
+      discoveryStatus.className = "status-msg";
+      discoveryStatus.textContent = `Connecting to Micro850 at ${ip} and querying tag database...`;
+
+      try {
+        const res = await fetch(`/api/plc/tags?ip=${encodeURIComponent(ip)}`);
+        const data = await res.json();
+
+        if (!data.success && (!data.tags || data.tags.length === 0)) {
+          discoveryStatus.className = "status-msg error";
+          discoveryStatus.textContent = `Error: ${data.error || "No tags returned. Is the Micro850 reachable?"}`;
+          return;
+        }
+
+        discoveryStatus.className = "status-msg success";
+        discoveryStatus.textContent = `Extracted ${data.total_tags} tags from PLC! Recommended mappings pre-selected.`;
+
+        // Populate dropdowns for each field
+        fields.forEach(f => {
+          const inp = document.getElementById(`tag-${f}`);
+          const sel = document.getElementById(`sel-${f}`);
+          if (!sel) return;
+
+          sel.innerHTML = `<option value="">-- Select PLC Tag --</option>`;
+          data.tags.forEach(t => {
+            const opt = document.createElement("option");
+            opt.value = t.name;
+            opt.textContent = `${t.name} (${t.data_type})`;
+            sel.appendChild(opt);
+          });
+
+          // Set suggestion if available
+          const suggested = data.suggestions ? data.suggestions[f] : null;
+          if (suggested) {
+            sel.value = suggested;
+            if (inp) inp.value = suggested;
+          }
+
+          // Unhide select and hide manual input
+          sel.classList.remove("hidden");
+          if (inp) inp.classList.add("hidden");
+
+          sel.addEventListener("change", () => {
+            if (inp) inp.value = sel.value;
+          });
+        });
+
+      } catch (err) {
+        discoveryStatus.className = "status-msg error";
+        discoveryStatus.textContent = "Failed to query PLC: " + err.message;
+      }
+    });
+  }
+
+  // 3. Test Live Read
+  function getCurrentTagMapping() {
+    const map = {};
+    fields.forEach(f => {
+      const inp = document.getElementById(`tag-${f}`);
+      const sel = document.getElementById(`sel-${f}`);
+      const val = (sel && !sel.classList.contains("hidden") && sel.value) ? sel.value : (inp ? inp.value.trim() : "");
+      if (val) map[f] = val;
+    });
+    return map;
+  }
+
+  if (btnTestRead) {
+    btnTestRead.addEventListener("click", async () => {
+      const ip = cfgPlcIp.value.trim();
+      const tags = getCurrentTagMapping();
+      testReadOutput.classList.remove("hidden");
+      testReadOutput.innerHTML = "<em>Sending CIP Read requests to PLC...</em>";
+
+      try {
+        const res = await fetch("/api/plc/test-read", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ip, tags })
+        });
+        const d = await res.json();
+        let html = "";
+
+        if (d.results && Object.keys(d.results).length > 0) {
+          html += "<div style='color: #16a34a; font-weight: bold;'>Read Success:</div>";
+          for (const [k, v] of Object.entries(d.results)) {
+            html += `<div>[OK] ${k} (${v.tag}) = <strong>${v.value}</strong></div>`;
+          }
+        }
+        if (d.errors && Object.keys(d.errors).length > 0) {
+          html += "<div style='color: #dc2626; font-weight: bold; margin-top: 4px;'>Read Errors:</div>";
+          for (const [k, v] of Object.entries(d.errors)) {
+            html += `<div>[FAIL] ${k} (${v.tag}) = ${v.status}</div>`;
+          }
+        }
+        if (!html) html = `<span style='color: #dc2626;'>${d.error || "No tags could be read."}</span>`;
+        testReadOutput.innerHTML = html;
+      } catch (err) {
+        testReadOutput.innerHTML = `<span style='color: #dc2626;'>Test read error: ${err.message}</span>`;
+      }
+    });
+  }
+
+  // 4. Save and Apply Config
+  if (btnSavePlcConfig) {
+    btnSavePlcConfig.addEventListener("click", async () => {
+      const ip = cfgPlcIp.value.trim();
+      const tags = getCurrentTagMapping();
+      const mode = cfgTargetMode.value;
+
+      btnSavePlcConfig.disabled = true;
+      btnSavePlcConfig.textContent = "Saving...";
+
+      try {
+        const res = await fetch("/api/plc/save-config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ip, tags, mode })
+        });
+        const d = await res.json();
+        if (d.success) {
+          alert(`Configuration saved successfully!\nMode: ${mode.toUpperCase()}\nPLC IP: ${ip}\nPoller service restarted.`);
+          settingsModal.classList.add("hidden");
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          alert("Error saving configuration: " + (d.error || "Unknown error"));
+        }
+      } catch (err) {
+        alert("Failed to save: " + err.message);
+      } finally {
+        btnSavePlcConfig.disabled = false;
+        btnSavePlcConfig.textContent = "💾 Save & Apply Config";
+      }
+    });
+  }
+
   // Start polling loops
   initChart();
   pollCurrent();
@@ -287,3 +526,4 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(pollHistory, 5000);   // 5s chart refresh
   setInterval(pollSystem, 15000);   // 15s diagnostics
 });
+

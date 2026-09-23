@@ -42,6 +42,11 @@
           <button id="btn-export-pdf" class="btn-export btn-export-pdf" title="Download PDF quality audit report with logos">PDF</button>
         </div>
 
+        <!-- PLC Remote Setup Button -->
+        <button id="btn-open-settings" class="btn-settings" title="Auto-Detect PLC & Map Tags">
+          ⚙️ PLC Setup
+        </button>
+
         <!-- Mode Badge -->
         <div id="mode-badge" class="badge badge-mode {{ 'badge-mock' if plc_mode == 'MOCK' else 'badge-live' }}">
           {{ plc_mode }}: {{ plc_ip if plc_mode == 'LIVE' else 'SCADA Sim' }}
@@ -179,6 +184,144 @@
     </footer>
   </div>
 
-  <script src="/static/js/dashboard.js?v=light1"></script>
+  <!-- PLC Configuration & Auto-Detection Modal -->
+  <div id="settings-modal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title">Allen-Bradley Micro850 Remote Setup & Tag Discovery</h3>
+          <p class="modal-subtitle">Auto-detect controller IP on factory LAN and discover tag list over EtherNet/IP</p>
+        </div>
+        <button id="btn-close-settings" class="btn-close-modal" title="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Step 1: PLC IP & Subnet Discovery -->
+        <div class="setup-section">
+          <div class="setup-section-title">1. Controller IP & Network Auto-Discovery</div>
+          <div class="setup-row">
+            <div class="input-field-group">
+              <label for="cfg-plc-ip">PLC IP Address:</label>
+              <input type="text" id="cfg-plc-ip" placeholder="e.g. 192.168.1.50" value="192.168.1.50">
+            </div>
+            <button id="btn-scan-network" class="btn-action btn-scan">
+              🔍 Scan Subnet
+            </button>
+            <button id="btn-fetch-tags" class="btn-action btn-fetch">
+              ⚡ Auto-Detect Tags
+            </button>
+          </div>
+          <div id="discovery-status" class="status-msg">Enter PLC IP or click Scan Subnet.</div>
+          <div id="discovered-devices-list" class="device-results-box hidden"></div>
+        </div>
+
+        <!-- Step 2: Tag Mapping -->
+        <div class="setup-section">
+          <div class="setup-section-title">2. SCADA Telemetry Tag Mapping</div>
+          <p class="setup-hint">Auto-matching assigns PLC variables based on standard keywords (FIT-101, TT-101, etc.). You can manually adjust any field.</p>
+          
+          <div class="tag-mapping-grid">
+            <!-- Flow -->
+            <div class="map-item">
+              <label>Milk Flow (FIT-101):</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-flow_rate" class="tag-input" placeholder="e.g. FIT_101_FlowRate">
+                <select id="sel-flow_rate" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- Holding In -->
+            <div class="map-item">
+              <label>Holding In Temp (TT-101):</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-temp_holding_in" class="tag-input" placeholder="e.g. TT_101_HoldingIn">
+                <select id="sel-temp_holding_in" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- Holding Out -->
+            <div class="map-item">
+              <label>Holding Out Temp (TT-102):</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-temp_holding_out" class="tag-input" placeholder="e.g. TT_102_HoldingOut">
+                <select id="sel-temp_holding_out" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- Hot Water -->
+            <div class="map-item">
+              <label>Hot Water Temp (TT-103):</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-temp_hot_water" class="tag-input" placeholder="e.g. TT_103_HotWater">
+                <select id="sel-temp_hot_water" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- Chilled Water -->
+            <div class="map-item">
+              <label>Chilled Water Temp (TT-104):</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-temp_chilled_water" class="tag-input" placeholder="e.g. TT_104_ChilledWater">
+                <select id="sel-temp_chilled_water" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- FDV 1 -->
+            <div class="map-item">
+              <label>FDV-1 Inlet Divert Valve:</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-fdv1_status" class="tag-input" placeholder="e.g. FDV1_Status">
+                <select id="sel-fdv1_status" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- FDV 2 -->
+            <div class="map-item">
+              <label>FDV-2 Outlet Divert Valve:</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-fdv2_status" class="tag-input" placeholder="e.g. FDV2_Status">
+                <select id="sel-fdv2_status" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- CIP -->
+            <div class="map-item">
+              <label>CIP Sequence State:</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-cip_status" class="tag-input" placeholder="e.g. CIP_Active_Step">
+                <select id="sel-cip_status" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+            <!-- Recipe / Product -->
+            <div class="map-item">
+              <label>Product / Recipe Name:</label>
+              <div class="select-wrapper">
+                <input type="text" id="tag-product_name" class="tag-input" placeholder="e.g. Current_Recipe_Name">
+                <select id="sel-product_name" class="tag-dropdown hidden"></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Verification & Save -->
+        <div class="setup-section">
+          <div class="setup-section-title">3. Verify & Activate</div>
+          <div class="setup-footer-row">
+            <div class="mode-select-group">
+              <label for="cfg-target-mode">Operating Mode:</label>
+              <select id="cfg-target-mode" class="mode-select">
+                <option value="live">LIVE (Connect to Micro850 PLC)</option>
+                <option value="mock">MOCK (SCADA Plant Simulator)</option>
+              </select>
+            </div>
+            <div class="footer-actions">
+              <button id="btn-test-read" class="btn-action btn-test">
+                🧪 Test Live Read
+              </button>
+              <button id="btn-save-plc-config" class="btn-action btn-save">
+                💾 Save & Apply Config
+              </button>
+            </div>
+          </div>
+          <div id="test-read-output" class="test-results-box hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/dashboard.js?v=light2"></script>
 </body>
 </html>

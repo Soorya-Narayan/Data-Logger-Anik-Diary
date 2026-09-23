@@ -15,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.plc import get_plc_client
 from src.storage import DatabaseManager
-from src.reports import ExcelReportGenerator, ReportScheduler
 
 
 def load_config():
@@ -129,6 +128,7 @@ def cmd_generate_report(args):
                     r.get("cip_step"), r.get("status")
                 ])
     else:
+        from src.reports import ReportScheduler
         scheduler = ReportScheduler()
         gen = scheduler.generator
         path = gen.generate_report(
@@ -142,6 +142,65 @@ def cmd_generate_report(args):
         print(f"[Report] Generated successfully: {Path(path).resolve()}")
     else:
         print("[Report] No data logged in the specified time window.")
+
+
+def cmd_discover_network(args):
+    """Scan local subnet for Allen-Bradley EtherNet/IP devices."""
+    print("\n[Network Scan] Broadcasting EtherNet/IP ListIdentity requests on port 44818...")
+    from src.plc.discovery import discover_plcs_on_network
+    devices = discover_plcs_on_network()
+    if not devices:
+        print("[Network Scan] No EtherNet/IP devices detected. Ensure Ethernet cable is connected to PLC switch.")
+        return
+
+    print(f"\n[Network Scan] Found {len(devices)} device(s):")
+    for i, dev in enumerate(devices, 1):
+        print(f"  {i}. IP:     {dev.get('ip')}")
+        print(f"     Model:  {dev.get('product_name')}")
+        print(f"     Vendor: {dev.get('vendor')}")
+        print(f"     Rev:    {dev.get('revision')}")
+    print()
+
+
+def cmd_auto_detect_tags(args):
+    """Fetch all tags from Micro850 and suggest mappings."""
+    ip = args.ip
+    print(f"\n[Tag Discovery] Connecting to Micro850 PLC at {ip}...")
+    from src.plc.discovery import fetch_tags_from_plc, test_tag_read, save_and_apply_plc_config
+
+    res = fetch_tags_from_plc(ip)
+    if not res.get("success"):
+        print(f"[Tag Discovery] ERROR: {res.get('error', 'Failed to retrieve tags')}")
+        return
+
+    tags = res.get("tags", [])
+    suggestions = res.get("suggestions", {})
+    print(f"[Tag Discovery] Successfully retrieved {len(tags)} tags from PLC.")
+    print("\n--- Discovered Tags (Sample) ---")
+    for t in tags[:15]:
+        print(f"  - {t['name']:30s} ({t['data_type']})")
+    if len(tags) > 15:
+        print(f"  ... and {len(tags) - 15} more.")
+
+    print("\n--- Automatic Tag Mapping Suggestions ---")
+    for field, match in suggestions.items():
+        status = f"-> {match}" if match else "[NO MATCH FOUND]"
+        print(f"  {field:20s}: {status}")
+
+    if args.apply:
+        valid_mappings = {k: v for k, v in suggestions.items() if v}
+        print(f"\n[Tag Discovery] Testing live read with {len(valid_mappings)} matched tags...")
+        test_res = test_tag_read(ip, valid_mappings)
+        for fld, info in test_res.get("results", {}).items():
+            print(f"  [OK]   {fld:18s} ({info['tag']}) = {info['value']}")
+        for fld, info in test_res.get("errors", {}).items():
+            print(f"  [FAIL] {fld:18s} ({info['tag']}) = {info['status']}")
+
+        if test_res.get("success"):
+            save_and_apply_plc_config(ip, valid_mappings, mode="live")
+            print(f"\n[Tag Discovery] SUCCESS: Saved config and activated LIVE mode on {ip}!")
+        else:
+            print("\n[Tag Discovery] Read verification failed. Configuration not applied.")
 
 
 def main():
@@ -163,6 +222,16 @@ def main():
     p_report.add_argument("--sample-step", type=int, default=1, help="Downsampling step in seconds (default: 1)")
     p_report.set_defaults(func=cmd_generate_report)
 
+    # discover-network
+    p_disc = subparsers.add_parser("discover-network", help="Scan subnet for EtherNet/IP devices (port 44818)")
+    p_disc.set_defaults(func=cmd_discover_network)
+
+    # auto-detect-tags
+    p_tags = subparsers.add_parser("auto-detect-tags", help="Fetch all tags from Micro850 and suggest SCADA mappings")
+    p_tags.add_argument("--ip", type=str, required=True, help="IP address of the Micro850 PLC")
+    p_tags.add_argument("--apply", action="store_true", help="Automatically save config, test read, and switch to LIVE mode")
+    p_tags.set_defaults(func=cmd_auto_detect_tags)
+
     args = parser.parse_args()
     if not hasattr(args, "func"):
         parser.print_help()
@@ -173,3 +242,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
