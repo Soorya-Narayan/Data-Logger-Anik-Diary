@@ -62,10 +62,13 @@ class LivePLCClient(BasePLCClient):
             # pylogix.GetDeviceProperties can query identity
             device = self._plc.GetDeviceProperties()
             if device and device.Status == "Success":
+                val = device.Value
+                prod_name = getattr(val, "ProductName", getattr(val, "DeviceName", "Micro850"))
+                rev = getattr(val, "Revision", "")
                 logger.info(
                     "Connected to Allen-Bradley Device: %s (Rev %s)",
-                    device.ProductName,
-                    device.Revision,
+                    prod_name,
+                    rev,
                 )
                 self._connected = True
                 return True
