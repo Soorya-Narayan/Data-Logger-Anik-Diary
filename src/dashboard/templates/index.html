@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Pasteurizer Live SCADA Telemetry | Anik Dairy</title>
+  <title>Pasteurizer SCADA Telemetry System | Anik Dairy</title>
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=scada30_1">
+  <link rel="stylesheet" href="/static/css/style.css?v=scada_ind_1">
   <!-- Chart.js for live trends -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="scada-body">
   <div class="app-layout">
-    <!-- 1. Top Liquid Glass Navbar -->
+    <!-- 1. Top Industrial SCADA Navbar -->
     <header class="navbar glass-card">
       <div class="navbar-left">
         <img src="/static/img/anik_logo.png" alt="Anik Dairy Logo" class="brand-logo anik-logo">
@@ -39,7 +39,7 @@
               <polyline points="7 10 12 15 17 10"></polyline>
               <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
-            <span>Reports</span>
+            <span>REPORTS</span>
             <span class="chevron-icon">▾</span>
           </button>
 
@@ -115,7 +115,7 @@
           <span class="kpi-val" id="val-feed-flow">--</span>
           <span class="kpi-unit">L/H</span>
         </div>
-        <div class="kpi-tag">FLOW_METER</div>
+        <div class="kpi-tag">FIT-101 // FLOW_METER</div>
       </div>
 
       <div class="kpi-card glass-card">
@@ -124,7 +124,7 @@
           <span class="kpi-val" id="val-product-tot">--</span>
           <span class="kpi-unit">L</span>
         </div>
-        <div class="kpi-tag">TOTALIZER</div>
+        <div class="kpi-tag">TOTALIZER // RUNNING BATCH</div>
       </div>
 
       <div class="kpi-card glass-card">
@@ -133,7 +133,7 @@
           <span class="kpi-val val-temp-in" id="val-tt04">--</span>
           <span class="kpi-unit">°C</span>
         </div>
-        <div class="kpi-tag">TT04</div>
+        <div class="kpi-tag">TT04 // TEMP_4</div>
       </div>
 
       <div class="kpi-card glass-card">
@@ -142,7 +142,7 @@
           <span class="kpi-val val-temp-out" id="val-tt05">--</span>
           <span class="kpi-unit">°C</span>
         </div>
-        <div class="kpi-tag">TT05 / SP: <span id="val-sp-heating-badge">85°C</span></div>
+        <div class="kpi-tag">TT05 // SP: <span id="val-sp-heating-badge">85°C</span></div>
       </div>
 
       <div class="kpi-card glass-card">
@@ -151,7 +151,7 @@
           <span class="kpi-val val-temp-chill" id="val-tt08">--</span>
           <span class="kpi-unit">°C</span>
         </div>
-        <div class="kpi-tag">TT08</div>
+        <div class="kpi-tag">TT08 // TEMP_8</div>
       </div>
 
       <div class="kpi-card glass-card">
@@ -164,15 +164,15 @@
       </div>
     </section>
 
-    <!-- 4. Category Filter Navigation Bar -->
+    <!-- 4. Category Filter Navigation Bar (No emojis, Industrial engineering format) -->
     <nav class="category-nav glass-card">
-      <button class="cat-pill active" data-filter="all">All Instruments (30)</button>
-      <button class="cat-pill" data-filter="temps">🌡️ Temperatures (8+1)</button>
-      <button class="cat-pill" data-filter="pressures">⏱️ Pressures (6)</button>
-      <button class="cat-pill" data-filter="control">⚙️ Control & Levels (4)</button>
-      <button class="cat-pill" data-filter="setpoints">🎯 Setpoints (5)</button>
-      <button class="cat-pill" data-filter="valves">🔄 Valves & Diverts (4)</button>
-      <button class="cat-pill" data-filter="chart">📈 Process Trend Chart</button>
+      <button class="cat-pill active" data-filter="all">ALL INSTRUMENTS [30]</button>
+      <button class="cat-pill" data-filter="temps">TEMPERATURES [TT]</button>
+      <button class="cat-pill" data-filter="pressures">PRESSURES [PT]</button>
+      <button class="cat-pill" data-filter="control">PROCESS CONTROL [CV/LT]</button>
+      <button class="cat-pill" data-filter="setpoints">SETPOINTS [SP]</button>
+      <button class="cat-pill" data-filter="valves">VALVES & INTERLOCKS [FDV]</button>
+      <button class="cat-pill" data-filter="chart">TREND ANALYSIS</button>
     </nav>
 
     <!-- 5. Main SCADA Matrix Container -->
@@ -181,29 +181,29 @@
       <!-- Group A: Temperatures & Thermal Profiles (8 Sensors + Delta T) -->
       <section class="section-group" id="grp-temps">
         <div class="group-header">
-          <span class="group-icon">🌡️</span>
-          <h2 class="group-title">Thermal Profile & Temperature Sensors (TT01 – TT09)</h2>
-          <span class="group-count">9 Points</span>
+          <span class="group-tag-badge">SEC 01</span>
+          <h2 class="group-title">THERMAL PROFILE & TEMPERATURE TRANSMITTERS [TT01 - TT09]</h2>
+          <span class="group-count">9 CHANNELS</span>
         </div>
         <div class="matrix-grid">
           <!-- TT01 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Product In Temp</span>
-              <span class="m-tag">TT01</span>
+              <span class="m-title">PRODUCT IN TEMP</span>
+              <span class="m-tag">TT-01</span>
             </div>
             <div class="m-body">
               <span class="m-value" id="val-tt01">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Raw Infeed Temperature (TEMP_1)</div>
+            <div class="m-sub">Raw Infeed Channel (TEMP_1)</div>
           </div>
 
           <!-- TT03 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Regeneration R2 Temp</span>
-              <span class="m-tag">TT03</span>
+              <span class="m-title">REGENERATION R2 TEMP</span>
+              <span class="m-tag">TT-03</span>
             </div>
             <div class="m-body">
               <span class="m-value" id="val-tt03">--</span>
@@ -215,8 +215,8 @@
           <!-- TT04 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Holding Inlet Temp</span>
-              <span class="m-tag">TT04</span>
+              <span class="m-title">HOLDING INLET TEMP</span>
+              <span class="m-tag">TT-04</span>
             </div>
             <div class="m-body">
               <span class="m-value temp-in" id="val-tt04-full">--</span>
@@ -228,8 +228,8 @@
           <!-- TT05 -->
           <div class="card instr-card highlight-card">
             <div class="card-head">
-              <span class="m-title">Holding Outlet 1 Temp</span>
-              <span class="m-tag tag-primary">TT05 (Critical)</span>
+              <span class="m-title">HOLDING OUTLET 1 TEMP</span>
+              <span class="m-tag tag-primary">TT-05 [CRITICAL]</span>
             </div>
             <div class="m-body">
               <span class="m-value temp-out" id="val-tt05-full">--</span>
@@ -241,8 +241,8 @@
           <!-- TT06 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Holding Outlet 2 Temp</span>
-              <span class="m-tag">TT06</span>
+              <span class="m-title">HOLDING OUTLET 2 TEMP</span>
+              <span class="m-tag">TT-06</span>
             </div>
             <div class="m-body">
               <span class="m-value temp-out" id="val-tt06">--</span>
@@ -254,34 +254,34 @@
           <!-- TT07 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Chilled Milk Temp</span>
-              <span class="m-tag">TT07</span>
+              <span class="m-title">CHILLED MILK TEMP</span>
+              <span class="m-tag">TT-07</span>
             </div>
             <div class="m-body">
               <span class="m-value temp-chill" id="val-tt07">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Final Pack-Ready Milk (TEMP_7)</div>
+            <div class="m-sub">Final Pack-Ready Stream (TEMP_7)</div>
           </div>
 
           <!-- TT08 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Chilling Temp</span>
-              <span class="m-tag">TT08</span>
+              <span class="m-title">CHILLING TEMP</span>
+              <span class="m-tag">TT-08</span>
             </div>
             <div class="m-body">
               <span class="m-value temp-chill" id="val-tt08-full">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Glycol / Chilled Water Out (TEMP_8)</div>
+            <div class="m-sub">Chilled Water / Glycol Out (TEMP_8)</div>
           </div>
 
           <!-- TT09 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Hot Water Temp</span>
-              <span class="m-tag">TT09</span>
+              <span class="m-title">HOT WATER TEMP</span>
+              <span class="m-tag">TT-09</span>
             </div>
             <div class="m-body">
               <span class="m-value val-hot" id="val-tt09">--</span>
@@ -293,8 +293,8 @@
           <!-- Delta T -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Delta T (Temperature Diff)</span>
-              <span class="m-tag">DELTA T</span>
+              <span class="m-title">DELTA T [DIFFERENTIAL]</span>
+              <span class="m-tag">DELTA-T</span>
             </div>
             <div class="m-body">
               <span class="m-value val-delta" id="val-delta-t-full">--</span>
@@ -308,42 +308,42 @@
       <!-- Group B: Hydraulics & Pressure Matrix (PT01 – PT06) -->
       <section class="section-group" id="grp-pressures">
         <div class="group-header">
-          <span class="group-icon">⏱️</span>
-          <h2 class="group-title">Hydraulic Profile & Pressure Sensors (PT01 – PT06)</h2>
-          <span class="group-count">6 Points</span>
+          <span class="group-tag-badge">SEC 02</span>
+          <h2 class="group-title">HYDRAULIC PROFILE & PRESSURE TRANSMITTERS [PT01 - PT06]</h2>
+          <span class="group-count">6 CHANNELS</span>
         </div>
         <div class="matrix-grid">
           <!-- PT01 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Raw Milk Pressure</span>
-              <span class="m-tag">PT01</span>
+              <span class="m-title">RAW MILK PRESSURE</span>
+              <span class="m-tag">PT-01</span>
             </div>
             <div class="m-body">
               <span class="m-value val-press" id="val-pt01">--</span>
               <span class="m-unit">Bar</span>
             </div>
-            <div class="m-sub">Infeed Line (PRESSURE1)</div>
+            <div class="m-sub">Raw Infeed Circuit (PRESSURE1)</div>
           </div>
 
           <!-- PT02 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Regeneration R2 Pressure</span>
-              <span class="m-tag">PT02</span>
+              <span class="m-title">REGENERATION R2 PRESSURE</span>
+              <span class="m-tag">PT-02</span>
             </div>
             <div class="m-body">
               <span class="m-value val-press" id="val-pt02">--</span>
               <span class="m-unit">Bar</span>
             </div>
-            <div class="m-sub">Stage 2 Regen Pressure (PRESSURE2)</div>
+            <div class="m-sub">Regen Stage 2 Circuit (PRESSURE2)</div>
           </div>
 
           <!-- PT03 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Holding Inlet Pressure</span>
-              <span class="m-tag">PT03</span>
+              <span class="m-title">HOLDING INLET PRESSURE</span>
+              <span class="m-tag">PT-03</span>
             </div>
             <div class="m-body">
               <span class="m-value val-press" id="val-pt03">--</span>
@@ -355,8 +355,8 @@
           <!-- PT04 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Chilled Milk Pressure</span>
-              <span class="m-tag">PT04</span>
+              <span class="m-title">CHILLED MILK PRESSURE</span>
+              <span class="m-tag">PT-04</span>
             </div>
             <div class="m-body">
               <span class="m-value val-press" id="val-pt04">--</span>
@@ -368,8 +368,8 @@
           <!-- PT05 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Hot Water Pressure</span>
-              <span class="m-tag">PT05</span>
+              <span class="m-title">HOT WATER PRESSURE</span>
+              <span class="m-tag">PT-05</span>
             </div>
             <div class="m-body">
               <span class="m-value val-press" id="val-pt05">--</span>
@@ -381,14 +381,14 @@
           <!-- PT06 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Chilling Pressure</span>
-              <span class="m-tag">PT06</span>
+              <span class="m-title">CHILLING PRESSURE</span>
+              <span class="m-tag">PT-06</span>
             </div>
             <div class="m-body">
               <span class="m-value val-press" id="val-pt06">--</span>
               <span class="m-unit">Bar</span>
             </div>
-            <div class="m-sub">Chilling Water Return (PRESSURE6)</div>
+            <div class="m-sub">Chilled Return Circuit (PRESSURE6)</div>
           </div>
         </div>
       </section>
@@ -396,29 +396,29 @@
       <!-- Group C: Process Control, Levels & Flow -->
       <section class="section-group" id="grp-control">
         <div class="group-header">
-          <span class="group-icon">⚙️</span>
-          <h2 class="group-title">Process Controls, Levels & Volume</h2>
-          <span class="group-count">4 Points</span>
+          <span class="group-tag-badge">SEC 03</span>
+          <h2 class="group-title">PROCESS CONTROL, MASS FLOW & VESSEL GAUGES</h2>
+          <span class="group-count">5 CHANNELS</span>
         </div>
         <div class="matrix-grid">
           <!-- Feed Flow -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Feed Flow Rate</span>
+              <span class="m-title">FEED FLOW RATE</span>
               <span class="m-tag">FIT-101</span>
             </div>
             <div class="m-body">
               <span class="m-value val-flow" id="val-feed-flow-full">--</span>
               <span class="m-unit">L/H</span>
             </div>
-            <div class="m-sub">Magflow Instantaneous Rate</div>
+            <div class="m-sub">Magflow Instantaneous Infeed Rate</div>
           </div>
 
           <!-- Product Totalizer -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Product Totalizer</span>
-              <span class="m-tag">TOT</span>
+              <span class="m-title">PRODUCT TOTALIZER</span>
+              <span class="m-tag">TOT-01</span>
             </div>
             <div class="m-body">
               <span class="m-value val-tot" id="val-product-tot-full">--</span>
@@ -430,34 +430,34 @@
           <!-- Steam CV -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Steam Control Valve</span>
-              <span class="m-tag">STEAM CV</span>
+              <span class="m-title">STEAM CONTROL VALVE</span>
+              <span class="m-tag">CV-101</span>
             </div>
             <div class="m-body">
               <span class="m-value" id="val-steam-cv">--</span>
               <span class="m-unit">%</span>
             </div>
-            <div class="m-sub">Modulating Steam Valve Output</div>
+            <div class="m-sub">Modulating Valve Output (0-100%)</div>
           </div>
 
           <!-- Deodoriser Level -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Deodoriser Level</span>
-              <span class="m-tag">LEVEL1</span>
+              <span class="m-title">DEODORISER LEVEL</span>
+              <span class="m-tag">LT-101</span>
             </div>
             <div class="m-body">
               <span class="m-value" id="val-deodoriser-level">--</span>
               <span class="m-unit">%</span>
             </div>
-            <div class="m-sub">Vessel Liquid Level Gauge</div>
+            <div class="m-sub">Vessel Hydrostatic Level (LEVEL1)</div>
           </div>
 
           <!-- Regeneration Efficiency -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">Regeneration Efficiency</span>
-              <span class="m-tag">EFFICIENCY</span>
+              <span class="m-title">REGENERATION EFFICIENCY</span>
+              <span class="m-tag">EFF-01</span>
             </div>
             <div class="m-body">
               <span class="m-value val-eff" id="val-regen-eff">--</span>
@@ -471,74 +471,74 @@
       <!-- Group D: Process Setpoints (SP) -->
       <section class="section-group" id="grp-setpoints">
         <div class="group-header">
-          <span class="group-icon">🎯</span>
-          <h2 class="group-title">Automation Setpoints (SP)</h2>
-          <span class="group-count">5 Points</span>
+          <span class="group-tag-badge">SEC 04</span>
+          <h2 class="group-title">AUTOMATION CONTROL SETPOINTS [SP]</h2>
+          <span class="group-count">5 SETPOINTS</span>
         </div>
         <div class="matrix-grid">
           <!-- Heating Temp SP -->
           <div class="card instr-card sp-card">
             <div class="card-head">
-              <span class="m-title">Heating Temp SP</span>
-              <span class="m-tag tag-sp">SP</span>
+              <span class="m-title">HEATING TEMP SP</span>
+              <span class="m-tag tag-sp">SP-01</span>
             </div>
             <div class="m-body">
               <span class="m-value val-sp" id="val-sp-heating-temp">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Target Holding Temperature (85.0°C)</div>
+            <div class="m-sub">Holding Temperature Setpoint</div>
           </div>
 
           <!-- Chilling FDV Diversion SP -->
           <div class="card instr-card sp-card">
             <div class="card-head">
-              <span class="m-title">Chilling FDV Diversion SP</span>
-              <span class="m-tag tag-sp">SP</span>
+              <span class="m-title">CHILLING FDV DIVERSION SP</span>
+              <span class="m-tag tag-sp">SP-02</span>
             </div>
             <div class="m-body">
               <span class="m-value val-sp" id="val-sp-chill-fdv">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Chill Divert Cutoff Threshold (50.0°C)</div>
+            <div class="m-sub">Chill Divert Cutoff Threshold</div>
           </div>
 
           <!-- Heating FDV Diversion HYS SP -->
           <div class="card instr-card sp-card">
             <div class="card-head">
-              <span class="m-title">Heating FDV HYS SP</span>
-              <span class="m-tag tag-sp">SP</span>
+              <span class="m-title">HEATING FDV HYS SP</span>
+              <span class="m-tag tag-sp">SP-03</span>
             </div>
             <div class="m-body">
               <span class="m-value val-sp" id="val-sp-heating-hys">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Forward Divert Hysteresis (82.0°C)</div>
+            <div class="m-sub">Forward Divert Hysteresis Band</div>
           </div>
 
           <!-- Chilling Pressure SP -->
           <div class="card instr-card sp-card">
             <div class="card-head">
-              <span class="m-title">Chilling Pressure SP</span>
-              <span class="m-tag tag-sp">SP</span>
+              <span class="m-title">CHILLING PRESSURE SP</span>
+              <span class="m-tag tag-sp">SP-04</span>
             </div>
             <div class="m-body">
               <span class="m-value val-sp" id="val-sp-chill-press">--</span>
               <span class="m-unit">Bar</span>
             </div>
-            <div class="m-sub">Booster Pump Cutoff (6.0 Bar)</div>
+            <div class="m-sub">Booster Pump Cutoff Trip Limit</div>
           </div>
 
           <!-- Regeneration R1 Pressure SP -->
           <div class="card instr-card sp-card">
             <div class="card-head">
-              <span class="m-title">Regen R1 Pressure SP</span>
-              <span class="m-tag tag-sp">SP</span>
+              <span class="m-title">REGEN R1 PRESSURE SP</span>
+              <span class="m-tag tag-sp">SP-05</span>
             </div>
             <div class="m-body">
               <span class="m-value val-sp" id="val-sp-regen-press">--</span>
               <span class="m-unit">Bar</span>
             </div>
-            <div class="m-sub">Regen Stage 1 Cutoff (7.5 Bar)</div>
+            <div class="m-sub">Regen Stage 1 Pressure Setpoint</div>
           </div>
         </div>
       </section>
@@ -546,9 +546,9 @@
       <!-- Group E: Valves, Force Modes & Diverts -->
       <section class="section-group" id="grp-valves">
         <div class="group-header">
-          <span class="group-icon">🔄</span>
-          <h2 class="group-title">Valves, Diverts & Force Modes</h2>
-          <span class="group-count">4 Points + CIP</span>
+          <span class="group-tag-badge">SEC 05</span>
+          <h2 class="group-title">VALVE POSITION INTERLOCKS & DIVERSIONS [FDV]</h2>
+          <span class="group-count">4 CHANNELS + CIP</span>
         </div>
         <div class="actuator-grid">
           <!-- HOT FDV -->
@@ -558,7 +558,7 @@
               <span class="valve-pill" id="hot-fdv-pill">DIVERTED</span>
             </div>
             <div class="act-reason-text" id="hot-fdv-status-text">Reason: "FLOW FORWARD"</div>
-            <div class="act-sub-info">Position Tag: <code>FDV1_OPEN_IND</code> | Reason: <code>HOTSTRINGOUT</code></div>
+            <div class="act-sub-info">Position Tag: <code>FDV1_OPEN_IND</code> | State Tag: <code>HOTSTRINGOUT</code></div>
           </div>
 
           <!-- CHILL FDV -->
@@ -568,24 +568,24 @@
               <span class="valve-pill" id="chill-fdv-pill">DIVERTED</span>
             </div>
             <div class="act-reason-text" id="chill-fdv-status-text">Reason: "CHILLED WATER PRESSURE HIGH"</div>
-            <div class="act-sub-info">Position Tag: <code>FDV2_OPEN_IND</code> | Reason: <code>CHILLECHECKOUT</code></div>
+            <div class="act-sub-info">Position Tag: <code>FDV2_OPEN_IND</code> | State Tag: <code>CHILLECHECKOUT</code></div>
           </div>
 
           <!-- Force Modes -->
           <div class="card actuator-full-card">
             <div class="act-header-row">
-              <div class="act-title">FORCE CIRCULATION</div>
+              <div class="act-title">FORCE CIRCULATION OVERRIDE</div>
               <span class="mode-pill" id="force-circ-pill">OFF</span>
             </div>
-            <div class="act-reason-text" id="force-circ-desc">Manual Circulation Override: <code>FDV12_CIRCULATION_SW</code></div>
+            <div class="act-reason-text" id="force-circ-desc">Manual Circulation Switch: <code>FDV12_CIRCULATION_SW</code></div>
           </div>
 
           <div class="card actuator-full-card">
             <div class="act-header-row">
-              <div class="act-title">FORCE FORWARD</div>
+              <div class="act-title">FORCE FORWARD OVERRIDE</div>
               <span class="mode-pill" id="force-fwd-pill">OFF</span>
             </div>
-            <div class="act-reason-text" id="force-fwd-desc">Manual Bypass Override: <code>FDV12_SW_MANUAL_BYPASS</code></div>
+            <div class="act-reason-text" id="force-fwd-desc">Manual Bypass Switch: <code>FDV12_SW_MANUAL_BYPASS</code></div>
           </div>
 
           <!-- CIP Status -->
@@ -595,23 +595,28 @@
               <span class="valve-pill" id="cip-pill">STANDBY</span>
             </div>
             <div class="act-reason-text" id="cip-step">Phase: "FLOW DIVERT CIP"</div>
-            <div class="act-sub-info">Tag: <code>CIP_CYCLE</code> / <code>FDV12_CIP_CYCLE</code></div>
+            <div class="act-sub-info">Sequence Tag: <code>CIP_CYCLE</code> / <code>FDV12_CIP_CYCLE</code></div>
           </div>
         </div>
       </section>
 
       <!-- Group F: Process Trend Profile (Chart) -->
       <section class="section-group" id="grp-chart">
+        <div class="group-header">
+          <span class="group-tag-badge">SEC 06</span>
+          <h2 class="group-title">REAL-TIME TELEMETRIC TREND ANALYSIS</h2>
+          <span class="group-count">DUAL-AXIS SCADA</span>
+        </div>
         <div class="card chart-panel">
           <div class="chart-header">
             <div>
-              <h2 class="chart-title">Process Trend Profile (Dual-Axis Telemetry)</h2>
-              <div class="chart-subtitle">Real-time thermal curves (TT01, TT05, TT08) & feed flow rate</div>
+              <h3 class="chart-title">Process Trend Profile (Thermal & Mass Flow)</h3>
+              <div class="chart-subtitle">Real-time dual-axis telemetric trend curves (TT01, TT05, TT08, FIT-101)</div>
             </div>
             <div class="chart-controls">
-              <button class="btn-range active" data-mins="15">15 Min</button>
-              <button class="btn-range" data-mins="30">30 Min</button>
-              <button class="btn-range" data-mins="60">1 Hour</button>
+              <button class="btn-range active" data-mins="15">15 MIN</button>
+              <button class="btn-range" data-mins="30">30 MIN</button>
+              <button class="btn-range" data-mins="60">1 HOUR</button>
             </div>
           </div>
           <div class="chart-canvas-wrapper">
@@ -624,15 +629,15 @@
 
     <!-- 6. Compact Diagnostics Footer -->
     <footer class="system-footer">
-      <div class="sys-item">Hardware: <strong>Raspberry Pi (heatwatch)</strong></div>
+      <div class="sys-item">Edge Node: <strong>Raspberry Pi (heatwatch)</strong></div>
       <div class="sys-item">CPU: <span id="sys-cpu">--%</span></div>
       <div class="sys-item">Core Temp: <span id="sys-temp">--°C</span></div>
       <div class="sys-item">RAM: <span id="sys-ram">-- MB</span></div>
-      <div class="sys-item">SD Free: <span id="sys-disk">-- GB</span></div>
-      <div class="sys-item">Storage Mode: <strong>SQLite WAL (30 Instruments Buffered)</strong></div>
+      <div class="sys-item">Storage Free: <span id="sys-disk">-- GB</span></div>
+      <div class="sys-item">Engine: <strong>SQLite WAL (30 Instruments Buffered @ 1s)</strong></div>
     </footer>
   </div>
 
-  <script src="/static/js/dashboard.js?v=scada30_1"></script>
+  <script src="/static/js/dashboard.js?v=scada_ind_1"></script>
 </body>
 </html>
