@@ -1067,3 +1067,411 @@ html, body.no-scroll-body {
   max-height: 120px;
   overflow-y: auto;
 }
+
+/* ==========================================================================
+   SCADA 30 Instruments Matrix Layout & Responsive Mobile Styling
+   ========================================================================== */
+
+body.scada-body {
+  height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(circle at 10% 12%, rgba(224, 242, 254, 0.75) 0%, transparent 42%),
+    radial-gradient(circle at 92% 16%, rgba(237, 233, 254, 0.65) 0%, transparent 45%),
+    radial-gradient(circle at 50% 95%, rgba(241, 245, 249, 0.9) 0%, transparent 55%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.scada-body .app-layout {
+  min-height: 100vh;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px 20px;
+  gap: 12px;
+}
+
+/* Navbar Center Master Alarm */
+.navbar-center {
+  display: flex;
+  align-items: center;
+}
+
+.alarm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.pill-normal {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #065f46;
+}
+
+.pill-normal .alarm-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.pill-alarm {
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #991b1b;
+  animation: pulse-alarm 1.5s infinite;
+}
+
+.pill-alarm .alarm-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+}
+
+@keyframes pulse-alarm {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { transform: scale(1.02); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Executive KPI Quick Bar */
+.kpi-bar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.kpi-card {
+  padding: 10px 14px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+}
+
+.kpi-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kpi-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.kpi-val {
+  font-family: var(--font-mono);
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.kpi-unit {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.kpi-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+}
+
+.val-temp-in { color: #ea580c; }
+.val-temp-out { color: #0284c7; }
+.val-temp-chill { color: #0891b2; }
+.val-delta { color: #7c3aed; }
+.val-press { color: #0369a1; }
+.val-hot { color: #dc2626; }
+.val-eff { color: #16a34a; }
+.val-sp { color: #d97706; }
+
+/* Category Navigation Filter Pills */
+.category-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  overflow-x: auto;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.category-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.cat-pill {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cat-pill:hover {
+  background: rgba(255, 255, 255, 0.85);
+  color: #0f172a;
+}
+
+.cat-pill.active {
+  background: #ffffff;
+  color: #0071e3;
+  border-color: rgba(0, 113, 227, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.12);
+  font-weight: 700;
+}
+
+/* SCADA Matrix Content */
+.scada-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px;
+}
+
+.group-icon {
+  font-size: 1.1rem;
+}
+
+.group-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+}
+
+.group-count {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: rgba(203, 213, 225, 0.45);
+  color: #475569;
+  border-radius: 9999px;
+}
+
+/* Instruments Matrix Grid */
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.instr-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.instr-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -2px rgba(15, 23, 42, 0.07);
+}
+
+.instr-card.highlight-card {
+  background: linear-gradient(135deg, rgba(238, 242, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border: 1.5px solid rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
+}
+
+.tag-primary {
+  background: rgba(99, 102, 241, 0.12) !important;
+  color: #4338ca !important;
+  font-weight: 700 !important;
+}
+
+.sp-card {
+  border-left: 3px solid #f59e0b;
+}
+
+.tag-sp {
+  background: rgba(245, 158, 11, 0.12) !important;
+  color: #b45309 !important;
+  font-weight: 700 !important;
+}
+
+/* Actuator Cards */
+.actuator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.actuator-full-card {
+  padding: 12px 16px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+}
+
+.act-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.act-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.act-reason-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #334155;
+  background: rgba(241, 245, 249, 0.85);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.act-sub-info {
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+
+.act-sub-info code {
+  font-family: var(--font-mono);
+  color: #64748b;
+  background: rgba(226, 232, 240, 0.6);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+.mode-pill {
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.mode-active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.mode-off {
+  background: rgba(148, 163, 184, 0.15);
+  color: #64748b;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+/* Recipe Pill in State Banner */
+.recipe-pill {
+  padding: 2px 10px;
+  background: rgba(0, 113, 227, 0.12);
+  color: #0071e3;
+  border: 1px solid rgba(0, 113, 227, 0.25);
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+/* Mobile Responsiveness for Operator Phones */
+@media (max-width: 768px) {
+  .app-layout {
+    padding: 8px 8px 16px;
+    gap: 8px;
+  }
+
+  .navbar {
+    padding: 6px 10px;
+  }
+
+  .navbar-left .brand-logo {
+    max-height: 22px;
+  }
+
+  .navbar-center {
+    display: none; /* Keep header clean on small phones */
+  }
+
+  .kpi-bar-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .kpi-val {
+    font-size: 1.3rem;
+  }
+
+  .matrix-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .actuator-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .instr-card {
+    padding: 8px 10px;
+  }
+
+  .instr-card .m-value {
+    font-size: 1.25rem;
+  }
+
+  .instr-card .m-sub {
+    font-size: 0.62rem;
+  }
+}
+

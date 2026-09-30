@@ -1,6 +1,7 @@
 """
 SQLite Database Storage Manager.
 Optimized for Raspberry Pi SD card longevity using WAL mode and PRAGMA tunings.
+Supports all 30 Pasteurizer SCADA instruments with automated backward-compatible migrations.
 """
 
 import sqlite3
@@ -11,7 +12,49 @@ from typing import List, Dict, Any, Optional
 logger = logging.getLogger("DatabaseManager")
 
 
-SCHEMA_SQL = """
+# Complete list of dynamic columns added to pasteurizer_logs
+NEW_COLUMNS = [
+    ("feed_flow", "REAL"),
+    ("product_tot", "REAL"),
+    ("temp_product_in_tt01", "REAL"),
+    ("temp_regen_r2_tt03", "REAL"),
+    ("temp_holding_in_tt04", "REAL"),
+    ("temp_holding_out1_tt05", "REAL"),
+    ("temp_holding_out2_tt06", "REAL"),
+    ("temp_chilled_milk_tt07", "REAL"),
+    ("temp_chilling_tt08", "REAL"),
+    ("temp_hot_water_tt09", "REAL"),
+    ("delta_t", "REAL"),
+    ("press_raw_milk_pt01", "REAL"),
+    ("press_regen_r2_pt02", "REAL"),
+    ("press_holding_in_pt03", "REAL"),
+    ("press_chilled_milk_pt04", "REAL"),
+    ("press_hot_water_pt05", "REAL"),
+    ("press_chilling_pt06", "REAL"),
+    ("steam_cv", "REAL"),
+    ("deodoriser_level", "REAL"),
+    ("regen_efficiency", "REAL"),
+    ("sp_heating_temp", "REAL"),
+    ("sp_chill_fdv_diversion", "REAL"),
+    ("sp_heating_fdv_hys", "REAL"),
+    ("sp_chilling_pressure", "REAL"),
+    ("sp_regen_r1_pressure", "REAL"),
+    ("hot_fdv_status", "TEXT"),
+    ("hot_fdv_open", "INTEGER"),
+    ("chill_fdv_status", "TEXT"),
+    ("chill_fdv_open", "INTEGER"),
+    ("force_circulation", "INTEGER"),
+    ("force_forward", "INTEGER"),
+    ("failures", "TEXT"),
+    ("alarm_main", "INTEGER"),
+    ("alarm_fdv1", "INTEGER"),
+    ("alarm_high_press1", "INTEGER"),
+    ("alarm_high_press2", "INTEGER"),
+    ("trip_fdv1", "INTEGER"),
+    ("trip_fdv2", "INTEGER"),
+]
+
+BASE_SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS pasteurizer_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp TEXT NOT NULL,
@@ -36,11 +79,10 @@ CREATE INDEX IF NOT EXISTS idx_pasteurizer_cip ON pasteurizer_logs(cip_status);
 
 
 class DatabaseManager:
-    """Manages SQLite connection, schema creation, and optimized batch insertions."""
+    """Manages SQLite connection, schema creation, automated migrations, and optimized batch insertions."""
 
     def __init__(self, db_path: str):
         self.db_path = Path(db_path)
-        # Ensure parent directories exist
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
 
@@ -52,7 +94,6 @@ class DatabaseManager:
             check_same_thread=False
         )
         conn.row_factory = sqlite3.Row
-        # Crucial SD card wear reduction pragmas
         conn.execute("PRAGMA journal_mode = WAL;")
         conn.execute("PRAGMA synchronous = NORMAL;")
         conn.execute("PRAGMA cache_size = -64000;")  # 64MB cache in RAM
@@ -60,57 +101,60 @@ class DatabaseManager:
         return conn
 
     def _init_db(self):
-        """Create schema and indexes if they do not exist."""
+        """Create schema and apply backward-compatible column migrations."""
         conn = self._get_connection()
         try:
-            conn.executescript(SCHEMA_SQL)
-            logger.info("Database initialized successfully at %s (WAL mode enabled)", self.db_path)
+            conn.executescript(BASE_SCHEMA_SQL)
+            self._migrate_schema(conn)
+            logger.info("Database initialized & migrated successfully at %s", self.db_path)
         except Exception as exc:
             logger.error("Failed to initialize database: %s", exc)
             raise
         finally:
             conn.close()
 
+    def _migrate_schema(self, conn: sqlite3.Connection):
+        """Ensures all 30 instrument columns exist in pasteurizer_logs table."""
+        cursor = conn.execute("PRAGMA table_info(pasteurizer_logs);")
+        existing_cols = {row["name"] for row in cursor.fetchall()}
+
+        for col_name, col_type in NEW_COLUMNS:
+            if col_name not in existing_cols:
+                try:
+                    conn.execute(f"ALTER TABLE pasteurizer_logs ADD COLUMN {col_name} {col_type};")
+                    logger.info("Added missing column '%s' (%s) to pasteurizer_logs", col_name, col_type)
+                except sqlite3.OperationalError as err:
+                    logger.debug("Column migration skipped for %s: %s", col_name, err)
+
     def insert_batch(self, records: List[Dict[str, Any]]) -> int:
-        """
-        Atomically insert a batch of telemetry records in a single transaction.
-        Significantly reduces SD card writes compared to row-by-row commits.
-        """
+        """Atomically insert a batch of telemetry records with all 30 instruments."""
         if not records:
             return 0
 
-        insert_sql = """
-        INSERT INTO pasteurizer_logs (
-            timestamp, milk_flow, holding_in_temp, holding_out_temp,
-            product, status, fdv1_status, fdv1_reason,
-            fdv2_status, fdv2_reason, cip_status, cip_step, fdv_feedback
-        ) VALUES (
-            :timestamp, :milk_flow, :holding_in_temp, :holding_out_temp,
-            :product, :status, :fdv1_status, :fdv1_reason,
-            :fdv2_status, :fdv2_reason, :cip_status, :cip_step, :fdv_feedback
-        );
-        """
-
-        clean_records = []
-        for r in records:
-            clean_records.append({
-                "timestamp": r.get("timestamp"),
-                "milk_flow": r.get("milk_flow"),
-                "holding_in_temp": r.get("holding_in_temp"),
-                "holding_out_temp": r.get("holding_out_temp"),
-                "product": r.get("product"),
-                "status": r.get("status"),
-                "fdv1_status": r.get("fdv1_status"),
-                "fdv1_reason": r.get("fdv1_reason"),
-                "fdv2_status": r.get("fdv2_status"),
-                "fdv2_reason": r.get("fdv2_reason"),
-                "cip_status": r.get("cip_status"),
-                "cip_step": r.get("cip_step"),
-                "fdv_feedback": r.get("fdv_feedback"),
-            })
-
+        # Build dynamic insert columns based on available fields
         conn = self._get_connection()
         try:
+            cursor = conn.execute("PRAGMA table_info(pasteurizer_logs);")
+            valid_cols = [row["name"] for row in cursor.fetchall() if row["name"] != "id"]
+
+            col_names_str = ", ".join(valid_cols)
+            placeholders_str = ", ".join(f":{c}" for c in valid_cols)
+            insert_sql = f"INSERT INTO pasteurizer_logs ({col_names_str}) VALUES ({placeholders_str});"
+
+            clean_records = []
+            for r in records:
+                row_dict = {}
+                for c in valid_cols:
+                    val = r.get(c)
+                    # Convert booleans to integer for SQLite
+                    if isinstance(val, bool):
+                        val = 1 if val else 0
+                    elif isinstance(val, (dict, list)):
+                        import json
+                        val = json.dumps(val)
+                    row_dict[c] = val
+                clean_records.append(row_dict)
+
             with conn:
                 conn.executemany(insert_sql, clean_records)
             return len(clean_records)
@@ -131,10 +175,7 @@ class DatabaseManager:
             conn.close()
 
     def get_recent_records(self, limit: int = 1800) -> List[Dict[str, Any]]:
-        """
-        Retrieve latest N records in chronological order.
-        1800 records = 30 minutes at 1-sec resolution.
-        """
+        """Retrieve latest N records in chronological order."""
         sql = """
         SELECT * FROM (
             SELECT * FROM pasteurizer_logs ORDER BY id DESC LIMIT ?

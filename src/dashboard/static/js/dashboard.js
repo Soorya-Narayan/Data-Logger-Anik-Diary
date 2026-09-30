@@ -1,79 +1,181 @@
 /**
- * Anik Dairy 10 KL Pasteurizer Dashboard Script
- * Handles real-time polling, Chart.js trend, and CSV / Excel / PDF data exports.
+ * Anik Dairy 10 KL Pasteurizer SCADA Dashboard Script
+ * Handles real-time polling for all 30 instruments, Chart.js trends,
+ * category filter tabs, alarms, and CSV / Excel / PDF data exports.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
   let trendChart = null;
   let activeMinutes = 15;
 
-  // DOM Elements
+  // DOM Elements - Navigation & Clock
   const clockDisplay = document.getElementById("clock-display");
   const stateBanner = document.getElementById("state-banner");
   const statusText = document.getElementById("status-text");
   const lastUpdateText = document.getElementById("last-update-text");
-
-  const valFlow = document.getElementById("val-flow");
-  const valHoldingIn = document.getElementById("val-holding-in");
-  const valHoldingOut = document.getElementById("val-holding-out");
   const valProduct = document.getElementById("val-product");
+  const masterAlarmPill = document.getElementById("master-alarm-pill");
+  const masterAlarmText = document.getElementById("master-alarm-text");
 
-  const fdv1Pill = document.getElementById("fdv1-pill");
-  const fdv1Reason = document.getElementById("fdv1-reason");
-  const fdv2Pill = document.getElementById("fdv2-pill");
-  const fdv2Reason = document.getElementById("fdv2-reason");
+  // Executive KPI Quick Bar
+  const valFeedFlow = document.getElementById("val-feed-flow");
+  const valProductTot = document.getElementById("val-product-tot");
+  const valTt04 = document.getElementById("val-tt04");
+  const valTt05 = document.getElementById("val-tt05");
+  const valTt08 = document.getElementById("val-tt08");
+  const valDeltaT = document.getElementById("val-delta-t");
+  const valSpHeatingBadge = document.getElementById("val-sp-heating-badge");
+
+  // Thermal Profile (TT01 – TT09 & Delta T)
+  const valTt01 = document.getElementById("val-tt01");
+  const valTt03 = document.getElementById("val-tt03");
+  const valTt04Full = document.getElementById("val-tt04-full");
+  const valTt05Full = document.getElementById("val-tt05-full");
+  const valTt06 = document.getElementById("val-tt06");
+  const valTt07 = document.getElementById("val-tt07");
+  const valTt08Full = document.getElementById("val-tt08-full");
+  const valTt09 = document.getElementById("val-tt09");
+  const valDeltaTFull = document.getElementById("val-delta-t-full");
+
+  // Hydraulic Profile (PT01 – PT06)
+  const valPt01 = document.getElementById("val-pt01");
+  const valPt02 = document.getElementById("val-pt02");
+  const valPt03 = document.getElementById("val-pt03");
+  const valPt04 = document.getElementById("val-pt04");
+  const valPt05 = document.getElementById("val-pt05");
+  const valPt06 = document.getElementById("val-pt06");
+
+  // Controls, Levels & Volume
+  const valFeedFlowFull = document.getElementById("val-feed-flow-full");
+  const valProductTotFull = document.getElementById("val-product-tot-full");
+  const valSteamCv = document.getElementById("val-steam-cv");
+  const valDeodoriserLevel = document.getElementById("val-deodoriser-level");
+  const valRegenEff = document.getElementById("val-regen-eff");
+
+  // Setpoints
+  const valSpHeatingTemp = document.getElementById("val-sp-heating-temp");
+  const valSpChillFdv = document.getElementById("val-sp-chill-fdv");
+  const valSpHeatingHys = document.getElementById("val-sp-heating-hys");
+  const valSpChillPress = document.getElementById("val-sp-chill-press");
+  const valSpRegenPress = document.getElementById("val-sp-regen-press");
+
+  // Actuators & Valves
+  const hotFdvPill = document.getElementById("hot-fdv-pill");
+  const hotFdvStatusText = document.getElementById("hot-fdv-status-text");
+  const chillFdvPill = document.getElementById("chill-fdv-pill");
+  const chillFdvStatusText = document.getElementById("chill-fdv-status-text");
+  const forceCircPill = document.getElementById("force-circ-pill");
+  const forceFwdPill = document.getElementById("force-fwd-pill");
   const cipPill = document.getElementById("cip-pill");
   const cipStep = document.getElementById("cip-step");
 
+  // System Diagnostics
   const sysCpu = document.getElementById("sys-cpu");
   const sysTemp = document.getElementById("sys-temp");
   const sysRam = document.getElementById("sys-ram");
   const sysDisk = document.getElementById("sys-disk");
 
+  // Export controls
   const exportRange = document.getElementById("export-range");
   const btnExportCsv = document.getElementById("btn-export-csv");
   const btnExportExcel = document.getElementById("btn-export-excel");
   const btnExportPdf = document.getElementById("btn-export-pdf");
+  const reportsDropdown = document.getElementById("reports-menu-popover");
+  const btnReportsTrigger = document.getElementById("btn-reports-menu");
 
-  // Digital Clock
+  // Clock
   setInterval(() => {
     const now = new Date();
-    clockDisplay.textContent = now.toLocaleTimeString();
+    if (clockDisplay) clockDisplay.textContent = now.toLocaleTimeString();
   }, 1000);
 
-  // Initialize Chart.js
+  // Helper for numeric formatting
+  function fmtNum(val, dec = 2, defaultVal = "--") {
+    if (val === null || val === undefined) return defaultVal;
+    const n = Number(val);
+    if (isNaN(n)) return defaultVal;
+    return n.toFixed(dec);
+  }
+
+  // Category Filter Switching
+  const catButtons = document.querySelectorAll(".cat-pill");
+  const sections = {
+    temps: document.getElementById("grp-temps"),
+    pressures: document.getElementById("grp-pressures"),
+    control: document.getElementById("grp-control"),
+    setpoints: document.getElementById("grp-setpoints"),
+    valves: document.getElementById("grp-valves"),
+    chart: document.getElementById("grp-chart"),
+  };
+
+  catButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      catButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const filter = btn.getAttribute("data-filter");
+
+      if (filter === "all") {
+        Object.values(sections).forEach(sec => sec && (sec.style.display = "block"));
+      } else {
+        Object.entries(sections).forEach(([key, sec]) => {
+          if (!sec) return;
+          if (key === filter) {
+            sec.style.display = "block";
+            sec.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else {
+            sec.style.display = "none";
+          }
+        });
+      }
+    });
+  });
+
+  // Chart initialization
   function initChart() {
     if (window.Chart) {
       Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", sans-serif';
     }
-    const ctx = document.getElementById("trendChart").getContext("2d");
+    const canvas = document.getElementById("trendChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
     trendChart = new Chart(ctx, {
       type: "line",
       data: {
         labels: [],
         datasets: [
           {
-            label: "Holding In (°C)",
-            data: [],
-            borderColor: "#ea580c",
-            backgroundColor: "rgba(234, 88, 12, 0.08)",
-            borderWidth: 2,
-            yAxisID: "yTemp",
-            tension: 0.15,
-            pointRadius: 0,
-          },
-          {
-            label: "Holding Out (°C)",
+            label: "Holding Outlet TT05 (°C)",
             data: [],
             borderColor: "#0284c7",
             backgroundColor: "rgba(2, 132, 199, 0.08)",
-            borderWidth: 2,
+            borderWidth: 2.2,
             yAxisID: "yTemp",
             tension: 0.15,
             pointRadius: 0,
           },
           {
-            label: "Milk Flow (L/hr)",
+            label: "Product In TT01 (°C)",
+            data: [],
+            borderColor: "#ea580c",
+            backgroundColor: "rgba(234, 88, 12, 0.06)",
+            borderWidth: 1.8,
+            yAxisID: "yTemp",
+            tension: 0.15,
+            pointRadius: 0,
+          },
+          {
+            label: "Chilling TT08 (°C)",
+            data: [],
+            borderColor: "#06b6d4",
+            backgroundColor: "rgba(6, 182, 212, 0.06)",
+            borderWidth: 1.8,
+            yAxisID: "yTemp",
+            tension: 0.15,
+            pointRadius: 0,
+          },
+          {
+            label: "Feed Flow (L/H)",
             data: [],
             borderColor: "#4f46e5",
             backgroundColor: "rgba(79, 70, 229, 0.06)",
@@ -89,10 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
-        interaction: {
-          mode: "index",
-          intersect: false
-        },
+        interaction: { mode: "index", intersect: false },
         scales: {
           x: {
             grid: { color: "rgba(0, 0, 0, 0.06)" },
@@ -100,35 +199,33 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           yTemp: {
             type: "linear",
-            display: true,
             position: "left",
-            title: { display: true, text: "Temp (°C)", color: "#475569", font: { size: 10, weight: "bold" } },
+            title: { display: true, text: "Temperature (°C)", color: "#0284c7", font: { weight: "bold", size: 11 } },
+            suggestedMin: 0,
+            suggestedMax: 100,
             grid: { color: "rgba(0, 0, 0, 0.06)" },
-            ticks: { color: "#334155", font: { size: 10 } },
-            min: 40,
-            max: 100
+            ticks: { color: "#334155" }
           },
           yFlow: {
             type: "linear",
-            display: true,
             position: "right",
-            title: { display: true, text: "Flow (L/hr)", color: "#475569", font: { size: 10, weight: "bold" } },
+            title: { display: true, text: "Flow Rate (L/H)", color: "#4f46e5", font: { weight: "bold", size: 11 } },
+            suggestedMin: 0,
+            suggestedMax: 30000,
             grid: { drawOnChartArea: false },
-            ticks: { color: "#4f46e5", font: { size: 10 } },
-            min: 0,
-            max: 40000
+            ticks: { color: "#4f46e5" }
           }
         },
         plugins: {
           legend: {
-            labels: { color: "#1e293b", boxWidth: 10, padding: 10, font: { size: 11, weight: "bold" } }
+            labels: { color: "#1e293b", boxWidth: 12, padding: 12, font: { size: 11, weight: "bold" } }
           }
         }
       }
     });
   }
 
-  // Update Telemetry Metrics
+  // Poll real-time current telemetry
   async function pollCurrent() {
     try {
       const res = await fetch("/api/current");
@@ -138,49 +235,106 @@ document.addEventListener("DOMContentLoaded", () => {
       if (json.status === "ok" && json.data) {
         const d = json.data;
 
-        // Banner
-        statusText.textContent = d.status || "UNKNOWN STATUS";
+        // 1. Process State Banner
+        statusText.textContent = d.status || "STANDBY";
+        valProduct.textContent = d.product || "--";
         const sampleTime = new Date(d.timestamp);
         lastUpdateText.textContent = "Last sample: " + sampleTime.toLocaleTimeString() + " (1s Interval)";
 
-        // State banner coloring
-        stateBanner.className = "state-banner";
-        const st = (d.status || "").toUpperCase();
-        if (st.includes("PRODUCTION ACCEPTED")) {
-          stateBanner.classList.add("state-production");
-        } else if (st.includes("CIRCULATION")) {
-          stateBanner.classList.add("state-circulation");
-        } else if (st.includes("CIP")) {
-          stateBanner.classList.add("state-cip");
-        } else if (st.includes("DIVERT") || st.includes("SUB-COOLING")) {
-          stateBanner.classList.add("state-divert");
-        }
-
-        // Metrics
-        valFlow.textContent = d.milk_flow !== null ? Number(d.milk_flow).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 }) : "--";
-        valHoldingIn.textContent = d.holding_in_temp !== null ? Number(d.holding_in_temp).toFixed(2) : "--";
-        valHoldingOut.textContent = d.holding_out_temp !== null ? Number(d.holding_out_temp).toFixed(2) : "--";
-        valProduct.textContent = d.product || "--";
-
-        // FDV 1
-        if (d.fdv1_status === 1) {
-          fdv1Pill.className = "valve-pill pos-forward";
-          fdv1Pill.textContent = "FORWARD";
+        // 2. Master Alarm / Failures Pill
+        const failures = d.failures || "NORMAL";
+        if (failures !== "NORMAL" && failures !== "" && !failures.includes("NORMAL")) {
+          masterAlarmPill.className = "alarm-pill pill-alarm";
+          masterAlarmText.textContent = "ALARM: " + failures;
         } else {
-          fdv1Pill.className = "valve-pill pos-divert";
-          fdv1Pill.textContent = "DIVERTED";
+          masterAlarmPill.className = "alarm-pill pill-normal";
+          masterAlarmText.textContent = "SYSTEM: NORMAL";
         }
-        fdv1Reason.textContent = "Reason: " + (d.fdv1_reason || "All Ok");
 
-        // FDV 2
-        if (d.fdv2_status === 1) {
-          fdv2Pill.className = "valve-pill pos-forward";
-          fdv2Pill.textContent = "FORWARD";
-        } else {
-          fdv2Pill.className = "valve-pill pos-divert";
-          fdv2Pill.textContent = "DIVERTED";
+        // 3. Executive KPI Quick Bar
+        const flowVal = d.feed_flow !== undefined && d.feed_flow !== null ? d.feed_flow : d.milk_flow;
+        valFeedFlow.textContent = fmtNum(flowVal, 1);
+        valProductTot.textContent = fmtNum(d.product_tot, 1);
+        valTt04.textContent = fmtNum(d.temp_holding_in_tt04, 2);
+        valTt05.textContent = fmtNum(d.temp_holding_out1_tt05 !== undefined ? d.temp_holding_out1_tt05 : d.holding_out_temp, 2);
+        valTt08.textContent = fmtNum(d.temp_chilling_tt08, 2);
+        valDeltaT.textContent = fmtNum(d.delta_t, 2);
+        if (valSpHeatingBadge && d.sp_heating_temp) {
+          valSpHeatingBadge.textContent = fmtNum(d.sp_heating_temp, 1) + "°C";
         }
-        fdv2Reason.textContent = "Reason: " + (d.fdv2_reason || "All Ok");
+
+        // 4. Thermal Profile (TT01 – TT09 & Delta T)
+        valTt01.textContent = fmtNum(d.temp_product_in_tt01 !== undefined ? d.temp_product_in_tt01 : d.holding_in_temp, 2);
+        valTt03.textContent = fmtNum(d.temp_regen_r2_tt03, 2);
+        valTt04Full.textContent = fmtNum(d.temp_holding_in_tt04, 2);
+        valTt05Full.textContent = fmtNum(d.temp_holding_out1_tt05 !== undefined ? d.temp_holding_out1_tt05 : d.holding_out_temp, 2);
+        valTt06.textContent = fmtNum(d.temp_holding_out2_tt06, 2);
+        valTt07.textContent = fmtNum(d.temp_chilled_milk_tt07, 2);
+        valTt08Full.textContent = fmtNum(d.temp_chilling_tt08, 2);
+        valTt09.textContent = fmtNum(d.temp_hot_water_tt09, 2);
+        valDeltaTFull.textContent = fmtNum(d.delta_t, 2);
+
+        // 5. Hydraulics & Pressures (PT01 – PT06)
+        valPt01.textContent = fmtNum(d.press_raw_milk_pt01, 2);
+        valPt02.textContent = fmtNum(d.press_regen_r2_pt02, 2);
+        valPt03.textContent = fmtNum(d.press_holding_in_pt03, 2);
+        valPt04.textContent = fmtNum(d.press_chilled_milk_pt04, 2);
+        valPt05.textContent = fmtNum(d.press_hot_water_pt05, 2);
+        valPt06.textContent = fmtNum(d.press_chilling_pt06, 2);
+
+        // 6. Controls, Levels & Volume
+        valFeedFlowFull.textContent = fmtNum(flowVal, 1);
+        valProductTotFull.textContent = fmtNum(d.product_tot, 1);
+        valSteamCv.textContent = fmtNum(d.steam_cv, 1);
+        valDeodoriserLevel.textContent = fmtNum(d.deodoriser_level, 1);
+        valRegenEff.textContent = fmtNum(d.regen_efficiency, 1);
+
+        // 7. Setpoints
+        valSpHeatingTemp.textContent = fmtNum(d.sp_heating_temp, 1);
+        valSpChillFdv.textContent = fmtNum(d.sp_chill_fdv_diversion, 1);
+        valSpHeatingHys.textContent = fmtNum(d.sp_heating_fdv_hys, 1);
+        valSpChillPress.textContent = fmtNum(d.sp_chilling_pressure, 1);
+        valSpRegenPress.textContent = fmtNum(d.sp_regen_r1_pressure, 1);
+
+        // 8. Actuators & Valves
+        // HOT FDV
+        const hotOpen = d.hot_fdv_open || d.fdv1_status === 1;
+        if (hotOpen) {
+          hotFdvPill.className = "valve-pill pos-forward";
+          hotFdvPill.textContent = "FORWARD";
+        } else {
+          hotFdvPill.className = "valve-pill pos-divert";
+          hotFdvPill.textContent = "DIVERTED";
+        }
+        hotFdvStatusText.textContent = "Reason: " + (d.hot_fdv_status || d.fdv1_reason || "All Ok");
+
+        // CHILL FDV
+        const chillOpen = d.chill_fdv_open || d.fdv2_status === 1;
+        if (chillOpen) {
+          chillFdvPill.className = "valve-pill pos-forward";
+          chillFdvPill.textContent = "FORWARD";
+        } else {
+          chillFdvPill.className = "valve-pill pos-divert";
+          chillFdvPill.textContent = "DIVERTED";
+        }
+        chillFdvStatusText.textContent = "Reason: " + (d.chill_fdv_status || d.fdv2_reason || "All Ok");
+
+        // Force Modes
+        if (d.force_circulation) {
+          forceCircPill.className = "mode-pill mode-active";
+          forceCircPill.textContent = "ACTIVE";
+        } else {
+          forceCircPill.className = "mode-pill mode-off";
+          forceCircPill.textContent = "OFF";
+        }
+
+        if (d.force_forward) {
+          forceFwdPill.className = "mode-pill mode-active";
+          forceFwdPill.textContent = "BYPASS ACTIVE";
+        } else {
+          forceFwdPill.className = "mode-pill mode-off";
+          forceFwdPill.textContent = "OFF";
+        }
 
         // CIP
         if (d.cip_status === 1) {
@@ -190,14 +344,14 @@ document.addEventListener("DOMContentLoaded", () => {
           cipPill.className = "valve-pill pos-cip-idle";
           cipPill.textContent = "STANDBY";
         }
-        cipStep.textContent = "Step: " + (d.cip_step || "None");
+        cipStep.textContent = "Phase: " + (d.cip_step || "None");
       }
     } catch (err) {
       console.warn("Poll current telemetry error:", err);
     }
   }
 
-  // Update Historical Trend Chart
+  // Poll trend history
   async function pollHistory() {
     if (!trendChart) return;
     try {
@@ -207,378 +361,113 @@ document.addEventListener("DOMContentLoaded", () => {
       if (json.status !== "ok" || !json.data) return;
 
       const labels = [];
-      const dataIn = [];
-      const dataOut = [];
+      const dataTt05 = [];
+      const dataTt01 = [];
+      const dataTt08 = [];
       const dataFlow = [];
 
       json.data.forEach(pt => {
         const t = new Date(pt.timestamp);
         labels.push(t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-        dataIn.push(pt.holding_in_temp);
-        dataOut.push(pt.holding_out_temp);
-        dataFlow.push(pt.milk_flow);
+        dataTt05.push(pt.temp_holding_out1_tt05 !== undefined && pt.temp_holding_out1_tt05 !== null ? pt.temp_holding_out1_tt05 : pt.holding_out_temp);
+        dataTt01.push(pt.temp_product_in_tt01 !== undefined && pt.temp_product_in_tt01 !== null ? pt.temp_product_in_tt01 : pt.holding_in_temp);
+        dataTt08.push(pt.temp_chilling_tt08);
+        dataFlow.push(pt.feed_flow !== undefined && pt.feed_flow !== null ? pt.feed_flow : pt.milk_flow);
       });
 
       trendChart.data.labels = labels;
-      trendChart.data.datasets[0].data = dataIn;
-      trendChart.data.datasets[1].data = dataOut;
-      trendChart.data.datasets[2].data = dataFlow;
-      trendChart.update();
+      trendChart.data.datasets[0].data = dataTt05;
+      trendChart.data.datasets[1].data = dataTt01;
+      trendChart.data.datasets[2].data = dataTt08;
+      trendChart.data.datasets[3].data = dataFlow;
+      trendChart.update("none");
     } catch (err) {
-      console.warn("Error updating trend chart:", err);
+      console.warn("Poll history error:", err);
     }
   }
 
-  // System Diagnostics
+  // Poll system diagnostics
   async function pollSystem() {
     try {
       const res = await fetch("/api/system");
       if (!res.ok) return;
-      const d = await res.json();
-
-      if (d.cpu_usage_pct !== undefined) sysCpu.textContent = d.cpu_usage_pct + "%";
-      if (d.cpu_temp_c !== null && d.cpu_temp_c !== undefined) {
-        sysTemp.textContent = d.cpu_temp_c + "°C";
-      } else {
-        sysTemp.textContent = "N/A";
-      }
-      if (d.memory_used_mb !== undefined) {
-        sysRam.textContent = `${d.memory_used_mb} / ${d.memory_total_mb} MB`;
-      }
-      if (d.disk_free_gb !== undefined) {
-        sysDisk.textContent = `${d.disk_free_gb} GB (${100 - d.disk_used_pct}%)`;
-      }
+      const json = await res.json();
+      if (sysCpu) sysCpu.textContent = json.cpu_usage_pct + "%";
+      if (sysTemp) sysTemp.textContent = json.cpu_temp_c ? json.cpu_temp_c + "°C" : "N/A";
+      if (sysRam) sysRam.textContent = json.memory_used_mb + " / " + json.memory_total_mb + " MB";
+      if (sysDisk) sysDisk.textContent = json.disk_free_gb + " GB";
     } catch (err) {
-      // Ignore system health errors
+      // Diagnostic failure non-critical
     }
   }
 
-  // =========================================================================
-  // Liquid Glass Reports Popover & Segmented Controls
-  // =========================================================================
-  const btnReportsMenu = document.getElementById("btn-reports-menu");
-  const reportsPopover = document.getElementById("reports-menu-popover");
-  const reportsWrapper = document.getElementById("reports-dropdown-wrapper");
-  const segButtons = document.querySelectorAll(".segmented-control .seg-btn");
-
-  if (btnReportsMenu && reportsPopover) {
-    btnReportsMenu.addEventListener("click", (e) => {
+  // Reports popover toggle
+  if (btnReportsTrigger && reportsDropdown) {
+    btnReportsTrigger.addEventListener("click", (e) => {
       e.stopPropagation();
-      reportsPopover.classList.toggle("hidden");
+      reportsDropdown.classList.toggle("hidden");
     });
 
     document.addEventListener("click", (e) => {
-      if (reportsWrapper && !reportsWrapper.contains(e.target)) {
-        reportsPopover.classList.add("hidden");
+      if (!reportsDropdown.contains(e.target) && e.target !== btnReportsTrigger) {
+        reportsDropdown.classList.add("hidden");
       }
     });
-  }
 
-  segButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      segButtons.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      if (exportRange) {
-        exportRange.value = btn.dataset.hours;
-      }
+    // Duration segmented buttons
+    const segButtons = document.querySelectorAll("#export-segmented .seg-btn");
+    segButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        segButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        exportRange.value = btn.getAttribute("data-hours");
+      });
     });
-  });
 
-  // Export handlers
-  function triggerExport(format) {
-    const hours = exportRange ? exportRange.value : 8;
-    if (reportsPopover) reportsPopover.classList.add("hidden");
-    const url = `/api/export/${format}?hours=${hours}`;
-    window.location.href = url;
+    // Download triggers
+    if (btnExportCsv) {
+      btnExportCsv.addEventListener("click", () => {
+        const hours = exportRange ? exportRange.value : 8;
+        window.location.href = `/api/export/csv?hours=${hours}`;
+        reportsDropdown.classList.add("hidden");
+      });
+    }
+
+    if (btnExportExcel) {
+      btnExportExcel.addEventListener("click", () => {
+        const hours = exportRange ? exportRange.value : 8;
+        window.location.href = `/api/export/excel?hours=${hours}`;
+        reportsDropdown.classList.add("hidden");
+      });
+    }
+
+    if (btnExportPdf) {
+      btnExportPdf.addEventListener("click", () => {
+        const hours = exportRange ? exportRange.value : 8;
+        window.location.href = `/api/export/pdf?hours=${hours}`;
+        reportsDropdown.classList.add("hidden");
+      });
+    }
   }
 
-  if (btnExportCsv) {
-    btnExportCsv.addEventListener("click", () => triggerExport("csv"));
-  }
-  if (btnExportExcel) {
-    btnExportExcel.addEventListener("click", () => triggerExport("excel"));
-  }
-  if (btnExportPdf) {
-    btnExportPdf.addEventListener("click", () => triggerExport("pdf"));
-  }
-
-  // Range Buttons Handler
-  document.querySelectorAll(".btn-range").forEach(btn => {
+  // Range buttons for Trend
+  const rangeBtns = document.querySelectorAll(".chart-controls .btn-range");
+  rangeBtns.forEach(btn => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".btn-range").forEach(b => b.classList.remove("active"));
+      rangeBtns.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      activeMinutes = parseInt(btn.dataset.mins, 10);
+      activeMinutes = parseInt(btn.getAttribute("data-mins"), 10) || 15;
       pollHistory();
     });
   });
 
-  // =========================================================================
-  // PLC Remote Configuration & Tag Auto-Discovery Handlers
-  // =========================================================================
-  const btnOpenSettings = document.getElementById("btn-open-settings");
-  const btnCloseSettings = document.getElementById("btn-close-settings");
-  const settingsModal = document.getElementById("settings-modal");
-  const cfgPlcIp = document.getElementById("cfg-plc-ip");
-  const btnScanNetwork = document.getElementById("btn-scan-network");
-  const btnFetchTags = document.getElementById("btn-fetch-tags");
-  const discoveryStatus = document.getElementById("discovery-status");
-  const discoveredDevicesList = document.getElementById("discovered-devices-list");
-  const btnTestRead = document.getElementById("btn-test-read");
-  const btnSavePlcConfig = document.getElementById("btn-save-plc-config");
-  const cfgTargetMode = document.getElementById("cfg-target-mode");
-  const testReadOutput = document.getElementById("test-read-output");
-
-  const fields = [
-    "milk_flow", "holding_in_temp", "holding_out_temp", "product",
-    "status", "fdv1_status", "fdv2_status", "cip_status"
-  ];
-
-  const btnMinimizeKiosk = document.getElementById("btn-minimize-kiosk");
-  if (btnMinimizeKiosk) {
-    btnMinimizeKiosk.addEventListener("click", async () => {
-      // Exit browser fullscreen if active
-      if (document.fullscreenElement) {
-        try {
-          await document.exitFullscreen();
-        } catch (e) {
-          console.warn("Fullscreen exit error:", e);
-        }
-      }
-      // Send backend signal to minimize on Wayland / desktop
-      try {
-        await fetch("/api/system/minimize-kiosk", { method: "POST" });
-      } catch (err) {
-        console.warn("Minimize API error:", err);
-      }
-    });
-  }
-
-  // Open modal & load current config
-  if (btnOpenSettings) {
-    btnOpenSettings.addEventListener("click", async () => {
-      settingsModal.classList.remove("hidden");
-      try {
-        const res = await fetch("/api/plc/current-config");
-        if (res.ok) {
-          const d = await res.json();
-          if (d.ip) cfgPlcIp.value = d.ip;
-          if (d.mode) cfgTargetMode.value = d.mode.toLowerCase();
-          if (d.tags) {
-            fields.forEach(f => {
-              const inp = document.getElementById(`tag-${f}`);
-              if (inp && d.tags[f]) inp.value = d.tags[f];
-            });
-          }
-        }
-      } catch (err) {
-        console.warn("Could not fetch current PLC config:", err);
-      }
-    });
-  }
-
-  // Close modal
-  if (btnCloseSettings) {
-    btnCloseSettings.addEventListener("click", () => {
-      settingsModal.classList.add("hidden");
-    });
-  }
-  if (settingsModal) {
-    settingsModal.addEventListener("click", (e) => {
-      if (e.target === settingsModal) settingsModal.classList.add("hidden");
-    });
-  }
-
-  // 1. Scan Subnet
-  if (btnScanNetwork) {
-    btnScanNetwork.addEventListener("click", async () => {
-      discoveryStatus.className = "status-msg";
-      discoveryStatus.textContent = "Scanning subnet via EtherNet/IP broadcast (port 44818)...";
-      discoveredDevicesList.classList.add("hidden");
-      discoveredDevicesList.innerHTML = "";
-
-      try {
-        const res = await fetch("/api/plc/discover");
-        const json = await res.json();
-        const devs = json.devices || [];
-
-        if (devs.length === 0) {
-          discoveryStatus.className = "status-msg error";
-          discoveryStatus.textContent = "No EtherNet/IP devices detected. Ensure Ethernet cable is connected to PLC switch.";
-        } else {
-          discoveryStatus.className = "status-msg success";
-          discoveryStatus.textContent = `Found ${devs.length} device(s) on network! Click an IP to select:`;
-          discoveredDevicesList.classList.remove("hidden");
-
-          devs.forEach(dev => {
-            const item = document.createElement("div");
-            item.style.cssText = "padding: 4px 6px; cursor: pointer; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;";
-            item.innerHTML = `<strong>${dev.ip}</strong> <span>${dev.product_name} (${dev.vendor})</span>`;
-            item.addEventListener("click", () => {
-              cfgPlcIp.value = dev.ip;
-              discoveryStatus.textContent = `Selected PLC IP: ${dev.ip}`;
-            });
-            discoveredDevicesList.appendChild(item);
-          });
-        }
-      } catch (err) {
-        discoveryStatus.className = "status-msg error";
-        discoveryStatus.textContent = "Scan request failed: " + err.message;
-      }
-    });
-  }
-
-  // 2. Auto-Detect Tags from PLC
-  if (btnFetchTags) {
-    btnFetchTags.addEventListener("click", async () => {
-      const ip = cfgPlcIp.value.trim();
-      if (!ip) {
-        discoveryStatus.className = "status-msg error";
-        discoveryStatus.textContent = "Please enter or select a valid PLC IP address.";
-        return;
-      }
-
-      discoveryStatus.className = "status-msg";
-      discoveryStatus.textContent = `Connecting to Micro850 at ${ip} and querying tag database...`;
-
-      try {
-        const res = await fetch(`/api/plc/tags?ip=${encodeURIComponent(ip)}`);
-        const data = await res.json();
-
-        if (!data.success && (!data.tags || data.tags.length === 0)) {
-          discoveryStatus.className = "status-msg error";
-          discoveryStatus.textContent = `Error: ${data.error || "No tags returned. Is the Micro850 reachable?"}`;
-          return;
-        }
-
-        discoveryStatus.className = "status-msg success";
-        discoveryStatus.textContent = `Extracted ${data.total_tags} tags from PLC! Recommended mappings pre-selected.`;
-
-        // Populate dropdowns for each field
-        fields.forEach(f => {
-          const inp = document.getElementById(`tag-${f}`);
-          const sel = document.getElementById(`sel-${f}`);
-          if (!sel) return;
-
-          sel.innerHTML = `<option value="">-- Select PLC Tag --</option>`;
-          data.tags.forEach(t => {
-            const opt = document.createElement("option");
-            opt.value = t.name;
-            opt.textContent = `${t.name} (${t.data_type})`;
-            sel.appendChild(opt);
-          });
-
-          // Set suggestion if available
-          const suggested = data.suggestions ? data.suggestions[f] : null;
-          if (suggested) {
-            sel.value = suggested;
-            if (inp) inp.value = suggested;
-          }
-
-          // Unhide select and hide manual input
-          sel.classList.remove("hidden");
-          if (inp) inp.classList.add("hidden");
-
-          sel.addEventListener("change", () => {
-            if (inp) inp.value = sel.value;
-          });
-        });
-
-      } catch (err) {
-        discoveryStatus.className = "status-msg error";
-        discoveryStatus.textContent = "Failed to query PLC: " + err.message;
-      }
-    });
-  }
-
-  // 3. Test Live Read
-  function getCurrentTagMapping() {
-    const map = {};
-    fields.forEach(f => {
-      const inp = document.getElementById(`tag-${f}`);
-      const sel = document.getElementById(`sel-${f}`);
-      const val = (sel && !sel.classList.contains("hidden") && sel.value) ? sel.value : (inp ? inp.value.trim() : "");
-      if (val) map[f] = val;
-    });
-    return map;
-  }
-
-  if (btnTestRead) {
-    btnTestRead.addEventListener("click", async () => {
-      const ip = cfgPlcIp.value.trim();
-      const tags = getCurrentTagMapping();
-      testReadOutput.classList.remove("hidden");
-      testReadOutput.innerHTML = "<em>Sending CIP Read requests to PLC...</em>";
-
-      try {
-        const res = await fetch("/api/plc/test-read", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ip, tags })
-        });
-        const d = await res.json();
-        let html = "";
-
-        if (d.results && Object.keys(d.results).length > 0) {
-          html += "<div style='color: #16a34a; font-weight: bold;'>Read Success:</div>";
-          for (const [k, v] of Object.entries(d.results)) {
-            html += `<div>[OK] ${k} (${v.tag}) = <strong>${v.value}</strong></div>`;
-          }
-        }
-        if (d.errors && Object.keys(d.errors).length > 0) {
-          html += "<div style='color: #dc2626; font-weight: bold; margin-top: 4px;'>Read Errors:</div>";
-          for (const [k, v] of Object.entries(d.errors)) {
-            html += `<div>[FAIL] ${k} (${v.tag}) = ${v.status}</div>`;
-          }
-        }
-        if (!html) html = `<span style='color: #dc2626;'>${d.error || "No tags could be read."}</span>`;
-        testReadOutput.innerHTML = html;
-      } catch (err) {
-        testReadOutput.innerHTML = `<span style='color: #dc2626;'>Test read error: ${err.message}</span>`;
-      }
-    });
-  }
-
-  // 4. Save and Apply Config
-  if (btnSavePlcConfig) {
-    btnSavePlcConfig.addEventListener("click", async () => {
-      const ip = cfgPlcIp.value.trim();
-      const tags = getCurrentTagMapping();
-      const mode = cfgTargetMode.value;
-
-      btnSavePlcConfig.disabled = true;
-      btnSavePlcConfig.textContent = "Saving...";
-
-      try {
-        const res = await fetch("/api/plc/save-config", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ip, tags, mode })
-        });
-        const d = await res.json();
-        if (d.success) {
-          alert(`Configuration saved successfully!\nMode: ${mode.toUpperCase()}\nPLC IP: ${ip}\nPoller service restarted.`);
-          settingsModal.classList.add("hidden");
-          setTimeout(() => window.location.reload(), 1000);
-        } else {
-          alert("Error saving configuration: " + (d.error || "Unknown error"));
-        }
-      } catch (err) {
-        alert("Failed to save: " + err.message);
-      } finally {
-        btnSavePlcConfig.disabled = false;
-        btnSavePlcConfig.textContent = "💾 Save & Apply Config";
-      }
-    });
-  }
-
-  // Start polling loops
+  // Start initialization
   initChart();
   pollCurrent();
   pollHistory();
   pollSystem();
 
-  setInterval(pollCurrent, 1000);   // 1s live values
-  setInterval(pollHistory, 5000);   // 5s chart refresh
-  setInterval(pollSystem, 15000);   // 15s diagnostics
+  setInterval(pollCurrent, 1000);
+  setInterval(pollHistory, 5000);
+  setInterval(pollSystem, 10000);
 });
-
