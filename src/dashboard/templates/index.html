@@ -57,14 +57,20 @@
           <!-- Glass Floating Popover -->
           <div id="reports-menu-popover" class="glass-popover hidden">
             <div class="popover-section">
-              <div class="popover-label">PERIOD DURATION</div>
-              <div class="segmented-control" id="export-segmented">
-                <button type="button" class="seg-btn" data-hours="1">1h</button>
+              <div class="popover-label">OPERATIONAL PLANT SHIFT</div>
+              <div class="segmented-control" id="export-segmented" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;">
+                <button type="button" class="seg-btn active" data-hours="shift" title="Current or Concluded Shift">Current</button>
+                <button type="button" class="seg-btn" data-hours="shift1" title="1st Shift (06:30 AM - 02:00 PM)">Shift 1</button>
+                <button type="button" class="seg-btn" data-hours="shift2" title="2nd Shift (02:00 PM - 10:00 PM)">Shift 2</button>
+                <button type="button" class="seg-btn" data-hours="shift3" title="3rd Shift (10:00 PM - 06:30 AM)">Shift 3</button>
+              </div>
+              <div class="popover-label" style="margin-top: 10px;">HOURLY DURATION</div>
+              <div class="segmented-control" id="export-duration-segmented" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
                 <button type="button" class="seg-btn" data-hours="4">4h</button>
-                <button type="button" class="seg-btn active" data-hours="8">8h (Shift)</button>
+                <button type="button" class="seg-btn" data-hours="8">8h</button>
                 <button type="button" class="seg-btn" data-hours="24">24h</button>
               </div>
-              <input type="hidden" id="export-range" value="8">
+              <input type="hidden" id="export-range" value="shift">
             </div>
 
             <div class="popover-divider"></div>

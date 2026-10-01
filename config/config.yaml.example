@@ -66,11 +66,23 @@ reporting:
   # Report formats: "csv" (default), "excel", or "both"
   format: "csv"
 
-  # Shift change hours (24-hour): Shift 1 (06:00), Shift 2 (14:00), Shift 3 (22:00)
-  shift_hours: [6, 14, 22]
-
-  # Daily summary generated at this hour, covering previous 24 h
-  daily_report_hour: 6
+  # Operational Shift Schedule (Automatic shift-wise report dispatch):
+  # 1st Shift: 06:30 AM to 02:00 PM (14:00) -> Generated at 14:00:00
+  # 2nd Shift: 02:00 PM to 10:00 PM (22:00) -> Generated at 22:00:00
+  # 3rd Shift: 10:00 PM to 06:30 AM (crosses midnight) -> Generated at 06:30:00
+  shifts:
+    - id: 1
+      name: "1st Shift"
+      start: "06:30"
+      end: "14:00"
+    - id: 2
+      name: "2nd Shift"
+      start: "14:00"
+      end: "22:00"
+    - id: 3
+      name: "3rd Shift"
+      start: "22:00"
+      end: "06:30"
 
   # Report sample interval in seconds (3-second interval)
   excel_sample_interval_sec: 3

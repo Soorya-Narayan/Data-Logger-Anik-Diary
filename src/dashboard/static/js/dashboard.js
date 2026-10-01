@@ -681,37 +681,45 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Duration segmented buttons
-    const segButtons = document.querySelectorAll("#export-segmented .seg-btn");
+    // Shift and duration segmented buttons
+    const segButtons = document.querySelectorAll("#reports-menu-popover .seg-btn");
     segButtons.forEach(btn => {
       btn.addEventListener("click", () => {
         segButtons.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        exportRange.value = btn.getAttribute("data-hours");
+        if (exportRange) {
+          exportRange.value = btn.getAttribute("data-hours");
+        }
       });
     });
+
+    function getExportQuery() {
+      const val = exportRange ? exportRange.value : "shift";
+      if (val === "shift") return "shift=current";
+      if (val === "shift1") return "shift=1";
+      if (val === "shift2") return "shift=2";
+      if (val === "shift3") return "shift=3";
+      return `hours=${val}`;
+    }
 
     // Download triggers
     if (btnExportCsv) {
       btnExportCsv.addEventListener("click", () => {
-        const hours = exportRange ? exportRange.value : 8;
-        window.location.href = `/api/export/csv?hours=${hours}`;
+        window.location.href = `/api/export/csv?${getExportQuery()}`;
         reportsDropdown.classList.add("hidden");
       });
     }
 
     if (btnExportExcel) {
       btnExportExcel.addEventListener("click", () => {
-        const hours = exportRange ? exportRange.value : 8;
-        window.location.href = `/api/export/excel?hours=${hours}`;
+        window.location.href = `/api/export/excel?${getExportQuery()}`;
         reportsDropdown.classList.add("hidden");
       });
     }
 
     if (btnExportPdf) {
       btnExportPdf.addEventListener("click", () => {
-        const hours = exportRange ? exportRange.value : 8;
-        window.location.href = `/api/export/pdf?hours=${hours}`;
+        window.location.href = `/api/export/pdf?${getExportQuery()}`;
         reportsDropdown.classList.add("hidden");
       });
     }

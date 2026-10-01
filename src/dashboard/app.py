@@ -202,14 +202,29 @@ def api_minimize_kiosk():
 
 @app.route("/api/export/csv")
 def export_csv():
-    """Export full process telemetry as CSV — all 30 SCADA instruments shown on the dashboard."""
-    hours = request.args.get("hours", default=8.0, type=float)
-    now = datetime.now()
-    start = now - timedelta(hours=hours)
+    """Export full process telemetry as CSV — all 58 SCADA instruments."""
+    shift_arg = request.args.get("shift")
+    if shift_arg:
+        try:
+            from src.reports.scheduler import get_shift_window
+            sid = int(shift_arg) if shift_arg.isdigit() else None
+            _, shift_title, start_dt, end_dt = get_shift_window(shift_id=sid)
+            start = start_dt
+            now = end_dt
+            file_tag = f"shift{sid or 'current'}"
+        except Exception:
+            now = datetime.now()
+            start = now - timedelta(hours=8)
+            file_tag = "shift"
+    else:
+        hours = request.args.get("hours", default=8.0, type=float)
+        now = datetime.now()
+        start = now - timedelta(hours=hours)
+        file_tag = f"{int(hours)}h"
 
     rows = db.get_records_between(start.isoformat(), now.isoformat())
     if not rows:
-        rows = db.get_recent_records(limit=int(hours * 1200))
+        rows = db.get_recent_records(limit=int(8 * 1200))
 
     try:
         from src.reports.scheduler import filter_records_interval
@@ -252,7 +267,7 @@ def export_csv():
         writer.writerow(row_vals)
 
     output.seek(0)
-    filename = f"pasteurizer_full_log_{now.strftime('%Y%m%d_%H%M')}.csv"
+    filename = f"pasteurizer_telemetry_{file_tag}_{start.strftime('%Y%m%d_%H%M')}.csv"
     return Response(
         output.getvalue(),
         mimetype="text/csv",
@@ -264,12 +279,27 @@ def export_csv():
 @app.route("/api/export/excel")
 def export_excel():
     """Export formatted Excel report with summary KPIs and charts."""
-    hours = request.args.get("hours", default=8.0, type=float)
+    shift_arg = request.args.get("shift")
     step = request.args.get("step", default=1, type=int)
-    now = datetime.now()
-    start = now - timedelta(hours=hours)
 
-    title = f"Pasteurizer Telemetry ({int(hours)}h Window)"
+    if shift_arg:
+        try:
+            from src.reports.scheduler import get_shift_window
+            sid = int(shift_arg) if shift_arg.isdigit() else None
+            _, shift_title, start_dt, end_dt = get_shift_window(shift_id=sid)
+            start = start_dt
+            now = end_dt
+            title = f"Pasteurizer Telemetry - {shift_title}"
+        except Exception:
+            now = datetime.now()
+            start = now - timedelta(hours=8)
+            title = "Pasteurizer Telemetry (Shift Window)"
+    else:
+        hours = request.args.get("hours", default=8.0, type=float)
+        now = datetime.now()
+        start = now - timedelta(hours=hours)
+        title = f"Pasteurizer Telemetry ({int(hours)}h Window)"
+
     path = excel_gen.generate_report(
         start_iso=start.isoformat(),
         end_iso=now.isoformat(),
@@ -295,12 +325,27 @@ def export_excel():
 @app.route("/api/export/pdf")
 def export_pdf():
     """Export corporate audit-grade PDF with Anik Dairy & Goose logos."""
-    hours = request.args.get("hours", default=8.0, type=float)
+    shift_arg = request.args.get("shift")
     step = request.args.get("step", default=1, type=int)
-    now = datetime.now()
-    start = now - timedelta(hours=hours)
 
-    title = f"Pasteurizer Quality Audit Report ({int(hours)}h Window)"
+    if shift_arg:
+        try:
+            from src.reports.scheduler import get_shift_window
+            sid = int(shift_arg) if shift_arg.isdigit() else None
+            _, shift_title, start_dt, end_dt = get_shift_window(shift_id=sid)
+            start = start_dt
+            now = end_dt
+            title = f"Pasteurizer Audit Report - {shift_title}"
+        except Exception:
+            now = datetime.now()
+            start = now - timedelta(hours=8)
+            title = "Pasteurizer Quality Audit Report (Shift Window)"
+    else:
+        hours = request.args.get("hours", default=8.0, type=float)
+        now = datetime.now()
+        start = now - timedelta(hours=hours)
+        title = f"Pasteurizer Quality Audit Report ({int(hours)}h Window)"
+
     path = pdf_gen.generate_pdf(
         start_iso=start.isoformat(),
         end_iso=now.isoformat(),

@@ -1,9 +1,12 @@
 [Unit]
-Description=Timer for Pasteurizer Shift Reports (06:00, 14:00, 22:00)
+Description=Timer for Pasteurizer Automatic Shift Reports (06:30, 14:00, 22:00)
 
 [Timer]
-# Trigger at plant shift changes: 06:00, 14:00, 22:00
-OnCalendar=*-*-* 06:00:00
+# Trigger automatically at each plant shift conclusion:
+# 1st Shift: 06:30 AM to 02:00 PM -> Triggers at 14:00:00 (02:00 PM)
+# 2nd Shift: 02:00 PM to 10:00 PM -> Triggers at 22:00:00 (10:00 PM)
+# 3rd Shift: 10:00 PM to 06:30 AM -> Triggers at 06:30:00 (06:30 AM)
+OnCalendar=*-*-* 06:30:00
 OnCalendar=*-*-* 14:00:00
 OnCalendar=*-*-* 22:00:00
 Persistent=true

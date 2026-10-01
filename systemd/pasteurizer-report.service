@@ -1,5 +1,5 @@
 [Unit]
-Description=Anik Dairy 10 KL Pasteurizer Shift/Daily Report Generator
+Description=Anik Dairy 10 KL Pasteurizer Shift-Wise Automatic Report Generator
 After=network.target pasteurizer-poller.service
 
 [Service]
@@ -8,4 +8,4 @@ User=elanadu
 Group=elanadu
 WorkingDirectory=/home/elanadu/pasteurizer-logger
 Environment="PYTHONUNBUFFERED=1"
-ExecStart=/home/elanadu/pasteurizer-logger/venv/bin/python src/reports/scheduler.py
+ExecStart=/home/elanadu/pasteurizer-logger/venv/bin/python src/reports/scheduler.py --shift
