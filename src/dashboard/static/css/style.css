@@ -1,36 +1,60 @@
 /* ==========================================================================
-   Anik Dairy 10 KL Pasteurizer - Apple Liquid Glass SCADA System
-   Inspired by macOS Sequoia & visionOS Liquid Glass Aesthetics
+   Anik Dairy 10 KL Pasteurizer - Industrial SCADA System
+   Official Anik Dairy Brand Color Palette (Crimson Red, Milk Cream, Gold & Navy)
    ========================================================================== */
 
 :root {
-  /* Liquid Glass Palette */
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-bg-subtle: rgba(255, 255, 255, 0.55);
-  --glass-bg-hover: rgba(255, 255, 255, 0.88);
-  --glass-border: rgba(255, 255, 255, 0.85);
-  --glass-border-subtle: rgba(255, 255, 255, 0.5);
-  --glass-border-dark: rgba(203, 213, 225, 0.5);
+  /* Anik Dairy Official Brand Palette */
+  --anik-red: #D7262D;
+  --anik-red-hover: #BA1C22;
+  --anik-red-dark: #8A1217;
+  --anik-red-glow: rgba(215, 38, 45, 0.25);
+  --anik-red-subtle: rgba(215, 38, 45, 0.08);
+  --anik-red-border: rgba(215, 38, 45, 0.35);
 
-  --glass-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.06), 0 2px 8px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
-  --glass-shadow-hover: 0 16px 36px -4px rgba(15, 23, 42, 0.09), 0 4px 12px -2px rgba(15, 23, 42, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 1);
-  --glass-shadow-sm: 0 4px 16px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
-  --glass-blur: blur(24px) saturate(190%);
-  --glass-blur-heavy: blur(36px) saturate(210%);
+  --anik-gold: #C28E3A;
+  --anik-gold-hover: #A57426;
+  --anik-gold-dark: #925F18;
+  --anik-gold-glow: rgba(194, 142, 58, 0.22);
+  --anik-gold-subtle: rgba(194, 142, 58, 0.10);
+  --anik-gold-border: rgba(194, 142, 58, 0.35);
 
-  /* Text & Typography */
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-dim: #94a3b8;
-  --text-heading: #090d16;
+  --anik-green: #006837;
+  --anik-green-hover: #00532C;
+  --anik-green-glow: rgba(0, 104, 55, 0.22);
+  --anik-green-subtle: rgba(0, 104, 55, 0.09);
+  --anik-green-border: rgba(0, 104, 55, 0.30);
 
-  /* Apple Ambient Accents */
-  --apple-blue: #0071e3;
-  --apple-blue-hover: #0077ed;
-  --apple-emerald: #10b981;
-  --apple-amber: #f59e0b;
-  --apple-coral: #ef4444;
-  --apple-cyan: #0284c7;
+  --anik-cream: #FAF7F2;
+  --anik-cream-warm: #F3EBDD;
+  --anik-cream-border: #E8DCCF;
+  --anik-cream-accent: #EFE6D8;
+
+  --anik-navy: #152238;
+  --anik-slate: #334155;
+  --anik-dark: #0F172A;
+
+  /* Industrial SCADA Accents */
+  --scada-blue: #0284C7;
+  --scada-cyan: #0891B2;
+  --scada-purple: #6366F1;
+
+  /* Glass Base (Dairy Cream & Pure White) */
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.65);
+  --glass-bg-hover: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(232, 220, 207, 0.85);
+  --glass-border-subtle: rgba(232, 220, 207, 0.5);
+
+  --glass-shadow: 0 8px 24px -4px rgba(21, 34, 56, 0.06), 0 2px 6px -1px rgba(21, 34, 56, 0.04);
+  --glass-shadow-hover: 0 14px 30px -4px rgba(215, 38, 45, 0.1), 0 4px 10px -2px rgba(21, 34, 56, 0.06);
+  --glass-blur: blur(20px) saturate(180%);
+
+  /* Typography */
+  --text-main: #152238;
+  --text-muted: #52637a;
+  --text-dim: #8c9ba5;
+  --text-heading: #0F172A;
 
   /* Font Stack */
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", "Helvetica Neue", sans-serif;
@@ -43,29 +67,30 @@
   padding: 0;
 }
 
-/* Ambient Canvas with Diffuse Light */
-html, body.no-scroll-body {
+/* Ambient Canvas with Anik Dairy Milk Cream & Subtle Crimson Warmth */
+html, body.no-scroll-body, body.scada-body {
   height: 100vh;
   width: 100vw;
-  overflow: hidden;
-  background-color: #f8fafc;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #FAF8F5;
   background-image: 
-    radial-gradient(circle at 10% 12%, rgba(224, 242, 254, 0.75) 0%, transparent 42%),
-    radial-gradient(circle at 92% 16%, rgba(237, 233, 254, 0.65) 0%, transparent 45%),
-    radial-gradient(circle at 50% 95%, rgba(241, 245, 249, 0.9) 0%, transparent 55%);
+    radial-gradient(circle at 8% 12%, rgba(215, 38, 45, 0.045) 0%, transparent 40%),
+    radial-gradient(circle at 92% 16%, rgba(243, 235, 221, 0.8) 0%, transparent 45%),
+    radial-gradient(circle at 50% 95%, rgba(248, 250, 252, 0.95) 0%, transparent 55%);
   background-attachment: fixed;
   color: var(--text-main);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 .app-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  padding: 10px 14px;
-  gap: 8px;
+  min-height: 100vh;
+  height: auto;
+  padding: 10px 14px 24px;
+  gap: 12px;
 }
 
 /* Base Glass Card */
@@ -74,7 +99,7 @@ html, body.no-scroll-body {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
+  border-radius: 6px;
   box-shadow: var(--glass-shadow);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -146,21 +171,21 @@ html, body.no-scroll-body {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   padding: 5px 12px;
-  border-radius: 8px;
+  border-radius: 5px;
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--text-main);
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: none;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
 }
 
 .btn-glass-action:hover {
   background: var(--glass-bg-hover);
-  border-color: rgba(255, 255, 255, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1);
-  transform: translateY(-1px);
+  border-color: rgba(232, 220, 207, 1);
+  box-shadow: none;
+  transform: none;
 }
 
 .btn-glass-action:active {
@@ -182,9 +207,9 @@ html, body.no-scroll-body {
   font-size: 0.74rem;
   font-weight: 700;
   padding: 5px 11px;
-  border-radius: 8px;
+  border-radius: 4px;
   backdrop-filter: blur(12px);
-  box-shadow: var(--glass-shadow-sm);
+  box-shadow: none;
 }
 
 .mode-dot {
@@ -204,13 +229,13 @@ html, body.no-scroll-body {
 }
 
 .badge-live {
-  background: rgba(236, 253, 245, 0.8);
-  color: #047857;
-  border: 1px solid rgba(167, 243, 208, 0.8);
+  background: var(--anik-green-subtle);
+  color: var(--anik-green);
+  border: 1px solid var(--anik-green-border);
 }
 .badge-live .mode-dot {
-  background: #10b981;
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+  background: var(--anik-green);
+  box-shadow: 0 0 6px var(--anik-green-glow);
 }
 
 /* Digital Clock */
@@ -406,7 +431,7 @@ html, body.no-scroll-body {
   align-items: center;
   padding: 7px 16px;
   min-height: 40px;
-  border-radius: 12px;
+  border-radius: 5px;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -447,39 +472,39 @@ html, body.no-scroll-body {
 
 /* Breathing Aura State Classes */
 .state-banner.state-production {
-  background: rgba(240, 253, 244, 0.85);
-  border-color: rgba(34, 197, 94, 0.4);
-  box-shadow: 0 4px 20px -2px rgba(34, 197, 94, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: rgba(240, 253, 244, 0.9);
+  border-color: var(--anik-green-border);
+  box-shadow: 0 4px 20px -2px var(--anik-green-glow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .state-banner.state-production .state-text {
-  color: #15803d;
+  color: var(--anik-green);
 }
 
 .state-banner.state-circulation {
-  background: rgba(255, 251, 235, 0.85);
-  border-color: rgba(245, 158, 11, 0.4);
-  box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: rgba(254, 242, 242, 0.9);
+  border-color: var(--anik-red-border);
+  box-shadow: 0 4px 20px -2px var(--anik-red-glow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .state-banner.state-circulation .state-text {
-  color: #b45309;
+  color: var(--anik-red);
 }
 
 .state-banner.state-cip {
-  background: rgba(240, 249, 255, 0.85);
-  border-color: rgba(14, 165, 233, 0.4);
-  box-shadow: 0 4px 20px -2px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: rgba(240, 249, 255, 0.9);
+  border-color: rgba(2, 132, 199, 0.4);
+  box-shadow: 0 4px 20px -2px rgba(2, 132, 199, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .state-banner.state-cip .state-text {
-  color: #0369a1;
+  color: #0284c7;
 }
 
 .state-banner.state-divert {
-  background: rgba(254, 242, 242, 0.85);
-  border-color: rgba(239, 68, 68, 0.4);
-  box-shadow: 0 4px 20px -2px rgba(239, 68, 68, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: rgba(254, 242, 242, 0.9);
+  border-color: var(--anik-red-border);
+  box-shadow: 0 4px 20px -2px var(--anik-red-glow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .state-banner.state-divert .state-text {
-  color: #b91c1c;
+  color: var(--anik-red);
 }
 
 /* ==========================================================================
@@ -518,7 +543,7 @@ html, body.no-scroll-body {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
+  border-radius: 5px;
   box-shadow: var(--glass-shadow-sm);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -550,7 +575,7 @@ html, body.no-scroll-body {
   background: rgba(224, 242, 254, 0.7);
   color: #0369a1;
   padding: 2px 6px;
-  border-radius: 5px;
+  border-radius: 4px;
   border: 1px solid rgba(186, 230, 253, 0.8);
 }
 
@@ -570,11 +595,15 @@ html, body.no-scroll-body {
 }
 
 .m-value.temp-in {
-  color: #ea580c;
+  color: var(--anik-gold);
 }
 
 .m-value.temp-out {
-  color: #0284c7;
+  color: var(--anik-red);
+}
+
+.m-value.temp-chill {
+  color: var(--scada-blue);
 }
 
 .m-value.val-product {
@@ -603,7 +632,7 @@ html, body.no-scroll-body {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
+  border-radius: 5px;
   box-shadow: var(--glass-shadow-sm);
   flex-shrink: 0;
 }
@@ -649,15 +678,15 @@ html, body.no-scroll-body {
 }
 
 .valve-pill.pos-forward {
-  background: #dcfce7;
-  color: #15803d;
-  border: 1px solid #86efac;
+  background: var(--anik-green-subtle);
+  color: var(--anik-green);
+  border: 1px solid var(--anik-green-border);
 }
 
 .valve-pill.pos-divert {
-  background: #fee2e2;
-  color: #b91c1c;
-  border: 1px solid #fca5a5;
+  background: var(--anik-red-subtle);
+  color: var(--anik-red);
+  border: 1px solid var(--anik-red-border);
 }
 
 .valve-pill.pos-cip-active {
@@ -694,7 +723,7 @@ html, body.no-scroll-body {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
+  border-radius: 6px;
   box-shadow: var(--glass-shadow);
 }
 
@@ -723,8 +752,8 @@ html, body.no-scroll-body {
   gap: 3px;
   background: rgba(226, 232, 240, 0.5);
   padding: 3px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .btn-range {
@@ -746,7 +775,7 @@ html, body.no-scroll-body {
 .btn-range.active {
   background: #ffffff;
   color: var(--text-heading);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: none;
 }
 
 .chart-canvas-wrapper {
@@ -767,7 +796,7 @@ html, body.no-scroll-body {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   padding: 5px 16px;
-  border-radius: 10px;
+  border-radius: 5px;
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow-sm);
   font-size: 0.72rem;
@@ -1068,35 +1097,6 @@ html, body.no-scroll-body {
   overflow-y: auto;
 }
 
-/* ==========================================================================
-   SCADA 30 Instruments Matrix Layout & Responsive Mobile Styling
-   ========================================================================== */
-
-body.scada-body {
-  height: 100vh;
-  width: 100vw;
-  overflow-x: hidden;
-  overflow-y: auto;
-  background-color: #f8fafc;
-  background-image: 
-    radial-gradient(circle at 10% 12%, rgba(224, 242, 254, 0.75) 0%, transparent 42%),
-    radial-gradient(circle at 92% 16%, rgba(237, 233, 254, 0.65) 0%, transparent 45%),
-    radial-gradient(circle at 50% 95%, rgba(241, 245, 249, 0.9) 0%, transparent 55%);
-  background-attachment: fixed;
-  color: var(--text-main);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-}
-
-.scada-body .app-layout {
-  min-height: 100vh;
-  height: auto;
-  display: flex;
-  flex-direction: column;
-  padding: 10px 14px 20px;
-  gap: 12px;
-}
-
 /* Navbar Center Master Alarm */
 .navbar-center {
   display: flex;
@@ -1117,23 +1117,23 @@ body.scada-body {
 }
 
 .pill-normal {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  color: #065f46;
+  background: var(--anik-green-subtle);
+  border: 1px solid var(--anik-green-border);
+  color: var(--anik-green);
 }
 
 .pill-normal .alarm-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+  background: var(--anik-green);
+  box-shadow: 0 0 8px var(--anik-green-glow);
 }
 
 .pill-alarm {
-  background: rgba(239, 68, 68, 0.16);
-  border: 1px solid rgba(239, 68, 68, 0.5);
-  color: #991b1b;
+  background: var(--anik-red-subtle);
+  border: 1px solid var(--anik-red-border);
+  color: var(--anik-red);
   animation: pulse-alarm 1.5s infinite;
 }
 
@@ -1141,8 +1141,8 @@ body.scada-body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 10px #ef4444;
+  background: var(--anik-red);
+  box-shadow: 0 0 10px var(--anik-red-glow);
 }
 
 @keyframes pulse-alarm {
@@ -1159,22 +1159,28 @@ body.scada-body {
 }
 
 .kpi-card {
-  padding: 10px 14px;
-  border-radius: 12px;
+  padding: 11px 14px;
+  border-radius: 5px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 16px -2px rgba(21, 34, 56, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -2px rgba(215, 38, 45, 0.08);
 }
 
 .kpi-label {
   font-size: 0.68rem;
-  font-weight: 700;
-  color: #64748b;
+  font-weight: 800;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .kpi-value-row {
@@ -1185,32 +1191,37 @@ body.scada-body {
 
 .kpi-val {
   font-family: var(--font-mono);
-  font-size: 1.55rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--anik-navy);
 }
 
 .kpi-unit {
   font-size: 0.75rem;
-  font-weight: 600;
-  color: #94a3b8;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .kpi-tag {
   font-size: 0.65rem;
-  font-weight: 600;
-  color: #94a3b8;
+  font-weight: 700;
+  color: var(--text-dim);
   font-family: var(--font-mono);
+  letter-spacing: 0.02em;
 }
 
-.val-temp-in { color: #ea580c; }
-.val-temp-out { color: #0284c7; }
-.val-temp-chill { color: #0891b2; }
-.val-delta { color: #7c3aed; }
-.val-press { color: #0369a1; }
-.val-hot { color: #dc2626; }
-.val-eff { color: #16a34a; }
-.val-sp { color: #d97706; }
+/* Anik Brand Value Highlights */
+#val-feed-flow { color: var(--anik-red); }
+.val-temp-out { color: var(--anik-red); }
+.val-temp-in { color: var(--anik-gold); }
+.val-temp-chill { color: var(--scada-blue); }
+.val-delta { color: var(--scada-purple); }
+.val-press { color: #0284c7; }
+.val-hot { color: #b91c1c; }
+.val-eff { color: var(--scada-emerald); }
+.val-sp { color: var(--anik-gold); }
+.val-flow { color: var(--anik-red); }
+.val-tot { color: var(--anik-navy); }
 
 /* Category Navigation Filter Pills */
 .category-nav {
@@ -1219,9 +1230,11 @@ body.scada-body {
   gap: 8px;
   padding: 6px 10px;
   overflow-x: auto;
-  border-radius: 9999px;
+  border-radius: 5px;
   flex-shrink: 0;
   white-space: nowrap;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--glass-border);
 }
 
 .category-nav::-webkit-scrollbar {
@@ -1230,27 +1243,28 @@ body.scada-body {
 
 .cat-pill {
   padding: 6px 14px;
-  border-radius: 9999px;
+  border-radius: 4px;
   border: 1px solid transparent;
   background: transparent;
   font-size: 0.75rem;
-  font-weight: 600;
-  color: #475569;
+  font-weight: 700;
+  color: var(--anik-slate);
   cursor: pointer;
-  transition: all 0.2s ease;
+  letter-spacing: 0.03em;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cat-pill:hover {
-  background: rgba(255, 255, 255, 0.85);
-  color: #0f172a;
+  background: var(--anik-cream);
+  color: var(--anik-navy);
 }
 
 .cat-pill.active {
-  background: #ffffff;
-  color: #0071e3;
-  border-color: rgba(0, 113, 227, 0.25);
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.12);
-  font-weight: 700;
+  background: var(--anik-red);
+  color: #ffffff;
+  border-color: var(--anik-red);
+  box-shadow: none;
+  font-weight: 800;
 }
 
 /* SCADA Matrix Content */
@@ -1271,26 +1285,26 @@ body.scada-body {
   align-items: center;
   gap: 10px;
   padding: 4px 6px;
-  border-bottom: 1px solid rgba(203, 213, 225, 0.6);
+  border-bottom: 1.5px solid rgba(232, 220, 207, 0.9);
   margin-bottom: 2px;
 }
 
 .group-tag-badge {
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  font-weight: 700;
-  color: #0284c7;
-  background: rgba(2, 132, 199, 0.1);
-  border: 1px solid rgba(2, 132, 199, 0.3);
-  padding: 2px 7px;
+  font-weight: 800;
+  color: var(--anik-red);
+  background: rgba(215, 38, 45, 0.08);
+  border: 1px solid var(--anik-red-border);
+  padding: 2px 8px;
   border-radius: 4px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .group-title {
   font-size: 0.82rem;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--anik-navy);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   flex: 1;
@@ -1301,8 +1315,9 @@ body.scada-body {
   font-size: 0.65rem;
   font-weight: 700;
   padding: 2px 8px;
-  background: rgba(203, 213, 225, 0.5);
-  color: #475569;
+  background: var(--anik-cream-warm);
+  color: var(--anik-slate);
+  border: 1px solid var(--anik-cream-border);
   border-radius: 4px;
   letter-spacing: 0.03em;
 }
@@ -1316,41 +1331,45 @@ body.scada-body {
 
 .instr-card {
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: 5px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 2px 10px rgba(21, 34, 56, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .instr-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px -2px rgba(15, 23, 42, 0.07);
+  box-shadow: 0 8px 20px -2px rgba(215, 38, 45, 0.08);
+  border-color: rgba(215, 38, 45, 0.3);
 }
 
 .instr-card.highlight-card {
-  background: linear-gradient(135deg, rgba(238, 242, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
-  border: 1.5px solid rgba(99, 102, 241, 0.35);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
+  background: linear-gradient(135deg, rgba(254, 242, 242, 0.8) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border: 1.5px solid rgba(215, 38, 45, 0.4);
+  box-shadow: 0 4px 16px rgba(215, 38, 45, 0.08);
 }
 
 .tag-primary {
-  background: rgba(99, 102, 241, 0.12) !important;
-  color: #4338ca !important;
-  font-weight: 700 !important;
+  background: rgba(215, 38, 45, 0.12) !important;
+  color: var(--anik-red) !important;
+  border: 1px solid rgba(215, 38, 45, 0.25) !important;
+  font-weight: 800 !important;
 }
 
 .sp-card {
-  border-left: 3px solid #f59e0b;
+  border-left: 3.5px solid var(--anik-gold);
+  background: linear-gradient(135deg, rgba(250, 246, 238, 0.8) 0%, rgba(255, 255, 255, 0.95) 100%);
 }
 
 .tag-sp {
-  background: rgba(245, 158, 11, 0.12) !important;
-  color: #b45309 !important;
-  font-weight: 700 !important;
+  background: rgba(194, 142, 58, 0.12) !important;
+  color: #925f18 !important;
+  border: 1px solid rgba(194, 142, 58, 0.3) !important;
+  font-weight: 800 !important;
 }
 
 /* Actuator Cards */
@@ -1362,12 +1381,12 @@ body.scada-body {
 
 .actuator-full-card {
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: 5px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--glass-border);
 }
 
 .act-header-row {
@@ -1378,8 +1397,8 @@ body.scada-body {
 
 .act-title {
   font-size: 0.75rem;
-  font-weight: 700;
-  color: #1e293b;
+  font-weight: 800;
+  color: var(--anik-navy);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1387,37 +1406,39 @@ body.scada-body {
 .act-reason-text {
   font-size: 0.78rem;
   font-weight: 600;
-  color: #334155;
-  background: rgba(241, 245, 249, 0.85);
+  color: var(--text-main);
+  background: var(--anik-cream);
+  border: 1px solid var(--anik-cream-border);
   padding: 6px 10px;
   border-radius: 6px;
 }
 
 .act-sub-info {
   font-size: 0.65rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .act-sub-info code {
   font-family: var(--font-mono);
-  color: #64748b;
-  background: rgba(226, 232, 240, 0.6);
+  color: var(--anik-navy);
+  background: rgba(232, 220, 207, 0.6);
   padding: 1px 4px;
   border-radius: 4px;
 }
 
 .mode-pill {
   padding: 3px 10px;
-  border-radius: 9999px;
+  border-radius: 4px;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .mode-active {
-  background: rgba(16, 185, 129, 0.15);
-  color: #065f46;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(13, 148, 136, 0.15);
+  color: #046c4e;
+  border: 1px solid rgba(13, 148, 136, 0.35);
 }
 
 .mode-off {
@@ -1428,13 +1449,13 @@ body.scada-body {
 
 /* Recipe Pill in State Banner */
 .recipe-pill {
-  padding: 2px 10px;
-  background: rgba(0, 113, 227, 0.12);
-  color: #0071e3;
-  border: 1px solid rgba(0, 113, 227, 0.25);
-  border-radius: 9999px;
+  padding: 3px 12px;
+  background: var(--anik-gold-subtle);
+  color: var(--anik-gold-dark);
+  border: 1px solid var(--anik-gold-border);
+  border-radius: 4px;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 800;
   margin-left: 8px;
 }
 

@@ -147,8 +147,8 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             label: "Holding Outlet TT05 (°C)",
             data: [],
-            borderColor: "#0284c7",
-            backgroundColor: "rgba(2, 132, 199, 0.08)",
+            borderColor: "#D7262D",
+            backgroundColor: "rgba(215, 38, 45, 0.08)",
             borderWidth: 2.2,
             yAxisID: "yTemp",
             tension: 0.15,
@@ -157,8 +157,8 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             label: "Product In TT01 (°C)",
             data: [],
-            borderColor: "#ea580c",
-            backgroundColor: "rgba(234, 88, 12, 0.06)",
+            borderColor: "#C28E3A",
+            backgroundColor: "rgba(194, 142, 58, 0.08)",
             borderWidth: 1.8,
             yAxisID: "yTemp",
             tension: 0.15,
@@ -167,8 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             label: "Chilling TT08 (°C)",
             data: [],
-            borderColor: "#06b6d4",
-            backgroundColor: "rgba(6, 182, 212, 0.06)",
+            borderColor: "#0284C7",
+            backgroundColor: "rgba(2, 132, 199, 0.08)",
             borderWidth: 1.8,
             yAxisID: "yTemp",
             tension: 0.15,
@@ -177,9 +177,9 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             label: "Feed Flow (L/H)",
             data: [],
-            borderColor: "#4f46e5",
-            backgroundColor: "rgba(79, 70, 229, 0.06)",
-            borderWidth: 1.5,
+            borderColor: "#006837",
+            backgroundColor: "rgba(0, 104, 55, 0.08)",
+            borderWidth: 1.8,
             fill: true,
             yAxisID: "yFlow",
             tension: 0.15,
@@ -194,31 +194,31 @@ document.addEventListener("DOMContentLoaded", () => {
         interaction: { mode: "index", intersect: false },
         scales: {
           x: {
-            grid: { color: "rgba(0, 0, 0, 0.06)" },
+            grid: { color: "rgba(21, 34, 56, 0.05)" },
             ticks: { color: "#64748b", maxTicksLimit: 7, font: { size: 10 } }
           },
           yTemp: {
             type: "linear",
             position: "left",
-            title: { display: true, text: "Temperature (°C)", color: "#0284c7", font: { weight: "bold", size: 11 } },
+            title: { display: true, text: "Temperature (°C)", color: "#D7262D", font: { weight: "bold", size: 11 } },
             suggestedMin: 0,
             suggestedMax: 100,
-            grid: { color: "rgba(0, 0, 0, 0.06)" },
-            ticks: { color: "#334155" }
+            grid: { color: "rgba(21, 34, 56, 0.05)" },
+            ticks: { color: "#152238" }
           },
           yFlow: {
             type: "linear",
             position: "right",
-            title: { display: true, text: "Flow Rate (L/H)", color: "#4f46e5", font: { weight: "bold", size: 11 } },
+            title: { display: true, text: "Flow Rate (L/H)", color: "#006837", font: { weight: "bold", size: 11 } },
             suggestedMin: 0,
             suggestedMax: 30000,
             grid: { drawOnChartArea: false },
-            ticks: { color: "#4f46e5" }
+            ticks: { color: "#006837" }
           }
         },
         plugins: {
           legend: {
-            labels: { color: "#1e293b", boxWidth: 12, padding: 12, font: { size: 11, weight: "bold" } }
+            labels: { color: "#152238", boxWidth: 12, padding: 12, font: { size: 11, weight: "bold" } }
           }
         }
       }

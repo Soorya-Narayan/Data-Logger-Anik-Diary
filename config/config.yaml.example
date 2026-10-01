@@ -1,0 +1,86 @@
+# ==============================================================================
+# Pasteurizer Data Logger - Configuration Template
+# Copy this file to config/config.yaml and fill in your plant-specific values.
+# DO NOT commit config/config.yaml to version control.
+# ==============================================================================
+
+plant:
+  name: "Your Plant Name"
+  unit: "Pasteurizer Unit Name"
+  reference_line: "PHE-X"
+
+plc:
+  # Mode: 'mock' (simulation / dev) or 'live' (real Allen-Bradley EtherNet/IP)
+  mode: "mock"
+
+  # Allen-Bradley Micro850 IP address on your plant LAN — change this!
+  ip: "192.168.X.X"
+
+  # Micro850 uses slot 0
+  slot: 0
+
+  # Connection and read timeout in seconds
+  timeout: 3.0
+
+  # Network retry settings
+  retry_initial_delay_sec: 1.0
+  retry_max_delay_sec: 30.0
+  retry_backoff_multiplier: 2.0
+
+  # Mock-mode settings (realistic noise + simulated dropouts for dev/test)
+  mock:
+    enable_random_dropouts: true
+    dropout_probability: 0.005   # ~0.5% chance per cycle
+    dropout_duration_cycles: 3   # cycles to stay disconnected before recovery
+
+polling:
+  # Polling interval in seconds (1-second resolution recommended)
+  interval_seconds: 1.0
+
+storage:
+  # SQLite database path (relative to project root)
+  db_path: "data/pasteurizer_data.db"
+
+  # SD Card Optimization: buffer writes and flush in atomic batches
+  # Flush every 15 s OR when buffer reaches 30 records — whichever comes first
+  batch_flush_seconds: 15.0
+  batch_max_size: 30
+
+  # SQLite WAL checkpoint interval (pages)
+  wal_autocheckpoint_pages: 1000
+
+dashboard:
+  # Bind address (0.0.0.0 = accessible from plant LAN, 127.0.0.1 = local only)
+  host: "0.0.0.0"
+  port: 8080
+
+  # Live trend window shown in browser (minutes)
+  trend_window_minutes: 30
+
+  # Browser auto-poll interval (milliseconds)
+  client_poll_interval_ms: 1000
+
+reporting:
+  output_dir: "reports"
+
+  # Shift change hours (24-hour): Shift 1 (06:00), Shift 2 (14:00), Shift 3 (22:00)
+  shift_hours: [6, 14, 22]
+
+  # Daily summary generated at this hour, covering previous 24 h
+  daily_report_hour: 6
+
+  # Excel report sample interval (1 = full 1-sec, 5 or 10 for compact audit logs)
+  excel_sample_interval_sec: 1
+
+  # Optional SMTP email dispatch (disabled by default)
+  email:
+    enabled: false
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    use_tls: true
+    username: "YOUR_EMAIL@example.com"
+    password: "YOUR_APP_PASSWORD_HERE"
+    sender: "pasteurizer.reports@example.com"
+    recipients:
+      - "plant.manager@example.com"
+      - "quality.assurance@example.com"

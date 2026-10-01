@@ -1,10 +1,23 @@
-# Python
+# ==============================================================================
+# Pasteurizer Data Logger — .gitignore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# SENSITIVE PLANT CONFIGURATION (real IPs, PLC tag names, credentials)
+# Use config/*.example files as templates — NEVER commit the real configs.
+# ------------------------------------------------------------------------------
+config/config.yaml
+config/tags.json
+
+# ------------------------------------------------------------------------------
+# Python runtime artifacts
+# ------------------------------------------------------------------------------
 venv/
+env/
 *.py[cod]
 __pycache__/
 *.so
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -21,7 +34,9 @@ wheels/
 .installed.cfg
 *.egg
 
-# Data & logs (Generated at runtime)
+# ------------------------------------------------------------------------------
+# Data & generated runtime files (SQLite WAL, reports, logs)
+# ------------------------------------------------------------------------------
 data/*.db
 data/*.db-wal
 data/*.db-shm
@@ -29,15 +44,30 @@ logs/*.log
 reports/*.xlsx
 reports/*.pdf
 reports/*.csv
-!reports/.gitkeep
+
+# Keep the empty directory structure in git
 !data/.gitkeep
+!logs/.gitkeep
+!reports/.gitkeep
 
-# Testing & Scratch
+# ------------------------------------------------------------------------------
+# Scratch / one-off test scripts (contain real SSH creds / local paths)
+# ------------------------------------------------------------------------------
 scratch/
-.pytest_cache/
 
+# ------------------------------------------------------------------------------
+# Testing caches
+# ------------------------------------------------------------------------------
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ------------------------------------------------------------------------------
 # OS / Editor
+# ------------------------------------------------------------------------------
 .DS_Store
 .vscode/
 .idea/
 *.swp
+*.swo
+Thumbs.db

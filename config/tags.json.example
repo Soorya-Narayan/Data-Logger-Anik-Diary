@@ -1,0 +1,188 @@
+{
+  "_comment": "PLC tag mapping template for Allen-Bradley Micro850. Copy to config/tags.json and fill in your PLC variable names. DO NOT commit the real tags.json.",
+  "_instructions": "Map each logical instrument name (key) to the corresponding PLC global variable tag name (plc_tag). Run 'python scripts/discover_tags.py' to list all tags available on your controller.",
+  "tags": {
+    "feed_flow": {
+      "plc_tag": "YOUR_FLOW_METER_TAG",
+      "data_type": "REAL",
+      "unit": "L/hr",
+      "description": "Feed Flow Rate into Pasteurizer",
+      "category": "flow"
+    },
+    "temp_product_in_tt01": {
+      "plc_tag": "YOUR_TEMP_1_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Product In Temp TT01",
+      "category": "temperature"
+    },
+    "temp_regen_r2_tt03": {
+      "plc_tag": "YOUR_TEMP_3_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Regeneration R2 Temp TT03",
+      "category": "temperature"
+    },
+    "temp_holding_in_tt04": {
+      "plc_tag": "YOUR_TEMP_4_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Holding Inlet Temp TT04",
+      "category": "temperature"
+    },
+    "temp_holding_out1_tt05": {
+      "plc_tag": "YOUR_TEMP_5_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Holding Outlet 1 Temp TT05 (Legal Pasteurization Point)",
+      "category": "temperature"
+    },
+    "temp_holding_out2_tt06": {
+      "plc_tag": "YOUR_TEMP_6_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Holding Outlet 2 Temp TT06",
+      "category": "temperature"
+    },
+    "temp_chilled_milk_tt07": {
+      "plc_tag": "YOUR_TEMP_7_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Chilled Milk Temp TT07",
+      "category": "temperature"
+    },
+    "temp_chilling_tt08": {
+      "plc_tag": "YOUR_TEMP_8_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Chilling Temp TT08",
+      "category": "temperature"
+    },
+    "temp_hot_water_tt09": {
+      "plc_tag": "YOUR_TEMP_9_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Hot Water Temp TT09",
+      "category": "temperature"
+    },
+    "press_raw_milk_pt01": {
+      "plc_tag": "YOUR_PRESSURE_1_TAG",
+      "data_type": "REAL",
+      "unit": "Bar",
+      "description": "Raw Milk Pressure PT01",
+      "category": "pressure"
+    },
+    "press_regen_r2_pt02": {
+      "plc_tag": "YOUR_PRESSURE_2_TAG",
+      "data_type": "REAL",
+      "unit": "Bar",
+      "description": "Regeneration R2 Pressure PT02",
+      "category": "pressure"
+    },
+    "press_holding_in_pt03": {
+      "plc_tag": "YOUR_PRESSURE_3_TAG",
+      "data_type": "REAL",
+      "unit": "Bar",
+      "description": "Holding Inlet Pressure PT03",
+      "category": "pressure"
+    },
+    "press_chilled_milk_pt04": {
+      "plc_tag": "YOUR_PRESSURE_4_TAG",
+      "data_type": "REAL",
+      "unit": "Bar",
+      "description": "Chilled Milk Pressure PT04",
+      "category": "pressure"
+    },
+    "press_hot_water_pt05": {
+      "plc_tag": "YOUR_PRESSURE_5_TAG",
+      "data_type": "REAL",
+      "unit": "Bar",
+      "description": "Hot Water Pressure PT05",
+      "category": "pressure"
+    },
+    "press_chilling_pt06": {
+      "plc_tag": "YOUR_PRESSURE_6_TAG",
+      "data_type": "REAL",
+      "unit": "Bar",
+      "description": "Chilling Pressure PT06",
+      "category": "pressure"
+    },
+    "steam_cv": {
+      "plc_tag": "YOUR_STEAM_CV_TAG",
+      "data_type": "REAL",
+      "unit": "%",
+      "description": "Steam Control Valve Output",
+      "category": "control"
+    },
+    "deodoriser_level": {
+      "plc_tag": "YOUR_LEVEL_TAG",
+      "data_type": "REAL",
+      "unit": "%",
+      "description": "Deodoriser Vessel Level",
+      "category": "level"
+    },
+    "sp_heating_temp": {
+      "plc_tag": "YOUR_SP_HEATING_TEMP_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Heating Temperature Setpoint",
+      "category": "setpoint"
+    },
+    "sp_chill_fdv_diversion": {
+      "plc_tag": "YOUR_SP_CHILL_FDV_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Chilling FDV Diversion Setpoint",
+      "category": "setpoint"
+    },
+    "sp_heating_fdv_hys": {
+      "plc_tag": "YOUR_SP_HEATING_HYS_TAG",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Heating FDV Diversion Hysteresis Setpoint",
+      "category": "setpoint"
+    },
+    "sp_chilling_pressure": {
+      "plc_tag": "YOUR_SP_CHILL_PRESS_TAG",
+      "data_type": "REAL",
+      "unit": "Bar",
+      "description": "Chilling Pressure Setpoint",
+      "category": "setpoint"
+    },
+    "sp_regen_r1_pressure": {
+      "plc_tag": "YOUR_SP_REGEN_PRESS_TAG",
+      "data_type": "REAL",
+      "unit": "Bar",
+      "description": "Regeneration R1 Pressure Setpoint",
+      "category": "setpoint"
+    },
+    "hot_fdv_open": {
+      "plc_tag": "YOUR_HOT_FDV_OPEN_TAG",
+      "data_type": "BOOL",
+      "unit": "",
+      "description": "Hot FDV Open Indicator",
+      "category": "valve"
+    },
+    "chill_fdv_open": {
+      "plc_tag": "YOUR_CHILL_FDV_OPEN_TAG",
+      "data_type": "BOOL",
+      "unit": "",
+      "description": "Chill FDV Open Indicator",
+      "category": "valve"
+    },
+    "force_circulation": {
+      "plc_tag": "YOUR_FORCE_CIRC_TAG",
+      "data_type": "BOOL",
+      "unit": "",
+      "description": "Force Circulation Override",
+      "category": "control"
+    },
+    "force_forward": {
+      "plc_tag": "YOUR_FORCE_FWD_TAG",
+      "data_type": "BOOL",
+      "unit": "",
+      "description": "Force Forward Override",
+      "category": "control"
+    }
+  }
+}
