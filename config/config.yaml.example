@@ -42,9 +42,9 @@ storage:
   db_path: "data/pasteurizer_data.db"
 
   # SD Card Optimization: buffer writes and flush in atomic batches
-  # Flush every 15 s OR when buffer reaches 30 records — whichever comes first
-  batch_flush_seconds: 15.0
-  batch_max_size: 30
+  # Flush every 3 s OR when buffer reaches 5 records — whichever comes first
+  batch_flush_seconds: 3.0
+  batch_max_size: 5
 
   # SQLite WAL checkpoint interval (pages)
   wal_autocheckpoint_pages: 1000

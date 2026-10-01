@@ -12,6 +12,7 @@ import yaml
 import signal
 import logging
 from pathlib import Path
+from typing import Dict, Any, Optional, List
 
 # Add project root to Python path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -151,6 +152,18 @@ class PollerApp:
 
         return data
 
+    def _publish_latest(self, data: Dict[str, Any]):
+        """Publish latest sample to RAM tmpfs (/dev/shm or /tmp) for sub-millisecond dashboard reads."""
+        try:
+            shm_dir = Path("/dev/shm") if Path("/dev/shm").is_dir() else Path("/tmp")
+            target = shm_dir / "pasteurizer_latest.json"
+            tmp_target = shm_dir / "pasteurizer_latest.tmp"
+            with open(tmp_target, "w") as f:
+                json.dump(data, f)
+            tmp_target.replace(target)
+        except Exception as exc:
+            logger.debug("Failed publishing live sample to RAM: %s", exc)
+
     def run(self):
         """Execution loop with automatic connection retries and exponential backoff."""
         poll_interval = self.config.get("polling", {}).get("interval_seconds", 1.0)
@@ -189,6 +202,7 @@ class PollerApp:
                 data = self.plc_client.read_tags()
                 data = self._enrich_telemetry(data, loop_start)
                 self.buffer.add(data)
+                self._publish_latest(data)
                 current_backoff = retry_delay
 
             except ConnectionError as ce:

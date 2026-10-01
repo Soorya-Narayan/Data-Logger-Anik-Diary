@@ -81,7 +81,27 @@ def index():
 
 @app.route("/api/current")
 def api_current():
-    """Returns the single latest recorded sample."""
+    """Returns the single latest recorded sample (sub-millisecond from RAM if active)."""
+    # 1. Try reading real-time live sample published by poller to RAM disk
+    now_ts = datetime.now().timestamp()
+    shm_paths = [Path("/dev/shm/pasteurizer_latest.json"), Path("/tmp/pasteurizer_latest.json")]
+    for p in shm_paths:
+        if p.is_file():
+            try:
+                # Must be fresh (modified within last 8 seconds)
+                if (now_ts - p.stat().st_mtime) < 8.0:
+                    with open(p, "r") as f:
+                        data = json.load(f)
+                    return jsonify({
+                        "status": "ok",
+                        "data": data,
+                        "source": "ram",
+                        "server_time": datetime.now().isoformat()
+                    })
+            except Exception:
+                pass
+
+    # 2. Fallback to SQLite database
     record = db.get_latest_record()
     if not record:
         return jsonify({
@@ -92,7 +112,9 @@ def api_current():
 
     return jsonify({
         "status": "ok",
-        "data": record
+        "data": record,
+        "source": "db",
+        "server_time": datetime.now().isoformat()
     })
 
 

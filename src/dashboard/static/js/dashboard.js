@@ -97,6 +97,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return n.toFixed(dec);
   }
 
+  // Cross-browser timestamp parser (Safari/WebKit safe)
+  function parseTimestamp(ts) {
+    if (!ts) return new Date();
+    let s = String(ts).trim();
+    let d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+    s = s.replace(" ", "T").replace(/(\.\d{3})\d+/, "$1");
+    d = new Date(s);
+    return isNaN(d.getTime()) ? new Date() : d;
+  }
+
   // Category Filter Switching
   const catButtons = document.querySelectorAll(".cat-pill");
   const sections = {
@@ -238,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 1. Process State Banner
         statusText.textContent = d.status || "STANDBY";
         valProduct.textContent = d.product || "--";
-        const sampleTime = d.timestamp ? new Date(d.timestamp) : new Date();
+        const sampleTime = parseTimestamp(d.timestamp || json.server_time);
         const refreshSec = Math.round((window.POLL_INTERVAL_MS || 3000) / 1000);
         lastUpdateText.textContent = "Last sample: " + sampleTime.toLocaleTimeString() + " (" + refreshSec + "s Refresh)";
 
