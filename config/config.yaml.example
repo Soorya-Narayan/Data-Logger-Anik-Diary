@@ -78,12 +78,13 @@ reporting:
   # Automated SMTP Email Dispatch for Daily Reports
   email:
     enabled: false                   # Set to true to activate automated daily email dispatch
-    smtp_server: "smtp.gmail.com"   # SMTP relay: "smtp.gmail.com", "smtp.office365.com", or plant local relay
-    smtp_port: 587                  # 587 (TLS/STARTTLS) or 465 (SSL)
-    use_tls: true
-    username: "YOUR_EMAIL@example.com"
-    password: "YOUR_APP_PASSWORD_HERE"  # Google 16-character App Password or SMTP token
-    sender: "pasteurizer.reports@anikdairy.com"
+    smtp_server: "smtppro.zoho.in"   # "smtppro.zoho.in" (Zoho), "smtp.gmail.com" (Gmail), "smtp.office365.com"
+    smtp_port: 465                   # 465 (SSL) or 587 (STARTTLS)
+    use_ssl: true                    # Set true for port 465 (Zoho Mail SSL)
+    use_tls: false                   # Set true for port 587 (STARTTLS)
+    username: "reports@yourdomain.com"
+    password: "YOUR_APP_PASSWORD_HERE"  # Zoho App Password or Google 16-character App Password
+    sender: "reports@yourdomain.com"
     recipients:
       - "plant.manager@anikdairy.com"
       - "quality.assurance@anikdairy.com"

@@ -226,15 +226,24 @@ class ReportScheduler:
                 )
 
             server = mail_cfg.get("smtp_server")
-            port = mail_cfg.get("smtp_port", 587)
+            port = int(mail_cfg.get("smtp_port", 587))
             use_tls = mail_cfg.get("use_tls", True)
+            use_ssl = mail_cfg.get("use_ssl", False) or port == 465
 
-            with smtplib.SMTP(server, port, timeout=30) as smtp:
-                if use_tls:
-                    smtp.starttls()
-                if mail_cfg.get("username") and mail_cfg.get("password"):
-                    smtp.login(mail_cfg["username"], mail_cfg["password"])
-                smtp.send_message(msg)
+            if use_ssl:
+                import ssl
+                ssl_ctx = ssl.create_default_context()
+                with smtplib.SMTP_SSL(server, port, context=ssl_ctx, timeout=30) as smtp:
+                    if mail_cfg.get("username") and mail_cfg.get("password"):
+                        smtp.login(mail_cfg["username"], mail_cfg["password"])
+                    smtp.send_message(msg)
+            else:
+                with smtplib.SMTP(server, port, timeout=30) as smtp:
+                    if use_tls:
+                        smtp.starttls()
+                    if mail_cfg.get("username") and mail_cfg.get("password"):
+                        smtp.login(mail_cfg["username"], mail_cfg["password"])
+                    smtp.send_message(msg)
 
             logger.info("Email sent successfully to %s.", mail_cfg.get("recipients"))
             return True
