@@ -107,12 +107,13 @@ class DatabaseManager:
         """Get a configured SQLite connection with WAL mode and row factory."""
         conn = sqlite3.connect(
             str(self.db_path),
-            timeout=15.0,
+            timeout=30.0,
             check_same_thread=False
         )
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA journal_mode = WAL;")
         conn.execute("PRAGMA synchronous = NORMAL;")
+        conn.execute("PRAGMA busy_timeout = 30000;")  # 30-second wait before lock timeout
         conn.execute("PRAGMA cache_size = -64000;")  # 64MB cache in RAM
         conn.execute("PRAGMA temp_store = MEMORY;")
         return conn

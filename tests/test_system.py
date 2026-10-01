@@ -227,6 +227,46 @@ class TestPasteurizerSystem(unittest.TestCase):
         self.assertIn("milk_flow", saved_tags["tags"])
         self.assertEqual(saved_tags["tags"]["milk_flow"]["plc_tag"], "FIT_101_FlowRate")
 
+    def test_filter_records_3second_cadence(self):
+        """Verify report telemetry filter downsamples 1s data to 3s and preserves native 3s data."""
+        from src.reports.scheduler import filter_records_interval
+
+        base_time = datetime(2026, 10, 1, 12, 0, 0)
+        # Create 10 records spaced 1 second apart (0s .. 9s)
+        one_sec_records = [{"timestamp": (base_time + timedelta(seconds=i)).isoformat(), "idx": i} for i in range(10)]
+        filtered = filter_records_interval(one_sec_records, interval_sec=3.0)
+        # Should keep indices 0 (0s), 3 (3s), 6 (6s), 9 (9s) -> 4 records
+        self.assertEqual(len(filtered), 4)
+        self.assertEqual([r["idx"] for r in filtered], [0, 3, 6, 9])
+
+        # Create records already spaced 3 seconds apart (0s, 3s, 6s, 9s, 12s)
+        three_sec_records = [{"timestamp": (base_time + timedelta(seconds=i * 3)).isoformat(), "idx": i} for i in range(5)]
+        filtered_3s = filter_records_interval(three_sec_records, interval_sec=3.0)
+        self.assertEqual(len(filtered_3s), 5)
+        self.assertEqual([r["idx"] for r in filtered_3s], [0, 1, 2, 3, 4])
+
+    def test_async_data_buffer_worker(self):
+        """Verify DataBuffer in async_mode flushes via background worker thread without blocking."""
+        import time
+        db = DatabaseManager(self.test_db_path)
+        buffer = DataBuffer(db, batch_flush_seconds=0.2, batch_max_size=3, async_mode=True)
+
+        client = MockPLCClient(self.mock_config)
+        client.connect()
+
+        # Add 3 records -> exceeds batch_max_size=3, worker should flush
+        for _ in range(3):
+            buffer.add(client.read_tags())
+
+        # Allow background thread a moment to commit to SQLite
+        time.sleep(0.3)
+        self.assertEqual(buffer.pending_count(), 0)
+        latest = db.get_latest_record()
+        self.assertIsNotNone(latest)
+
+        buffer.close()
+
 
 if __name__ == "__main__":
     unittest.main()
+

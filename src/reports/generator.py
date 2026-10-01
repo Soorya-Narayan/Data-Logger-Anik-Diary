@@ -164,6 +164,8 @@ class ExcelReportGenerator:
             logger.warning("No records found in database between %s and %s", start_iso, end_iso)
             return None
 
+        from src.reports.scheduler import filter_records_interval
+        raw_records = filter_records_interval(raw_records, interval_sec=3.0)
         records = raw_records[::sample_step] if sample_step > 1 else raw_records
         df = pd.DataFrame(records)
 

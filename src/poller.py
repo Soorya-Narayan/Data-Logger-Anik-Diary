@@ -62,14 +62,15 @@ class PollerApp:
         """Initialize SQLite database and write-behind buffer."""
         storage_cfg = self.config.get("storage", {})
         db_path = storage_cfg.get("db_path", "data/pasteurizer_data.db")
-        batch_seconds = storage_cfg.get("batch_flush_seconds", 15.0)
-        batch_size = storage_cfg.get("batch_max_size", 30)
+        batch_seconds = storage_cfg.get("batch_flush_seconds", 9.0)
+        batch_size = storage_cfg.get("batch_max_size", 5)
 
         self.db = DatabaseManager(db_path=db_path)
         self.buffer = DataBuffer(
             db_manager=self.db,
             batch_flush_seconds=batch_seconds,
-            batch_max_size=batch_size
+            batch_max_size=batch_size,
+            async_mode=True
         )
 
         # Restore latest totalizer if available
@@ -185,8 +186,8 @@ class PollerApp:
             logger.debug("Failed publishing live sample to RAM: %s", exc)
 
     def run(self):
-        """Execution loop with automatic connection retries and exponential backoff."""
-        poll_interval = self.config.get("polling", {}).get("interval_seconds", 1.0)
+        """Execution loop with automatic connection retries, drift-free 3.0s cadence, and async flushing."""
+        poll_interval = float(self.config.get("polling", {}).get("interval_seconds", 3.0))
         plc_cfg = self.config.get("plc", {})
         retry_delay = plc_cfg.get("retry_initial_delay_sec", 1.0)
         retry_max = plc_cfg.get("retry_max_delay_sec", 30.0)
@@ -195,6 +196,8 @@ class PollerApp:
         current_backoff = retry_delay
 
         logger.info("Starting Poller Service loop (target interval: %.2fs)", poll_interval)
+
+        next_tick = time.monotonic()
 
         while self.running:
             # 1. Ensure PLC connection
@@ -205,15 +208,18 @@ class PollerApp:
                     if connected:
                         logger.info("PLC connected successfully.")
                         current_backoff = retry_delay
+                        next_tick = time.monotonic()
                     else:
                         logger.warning("Connection attempt unsuccessful. Retrying in %.1fs...", current_backoff)
                         time.sleep(current_backoff)
                         current_backoff = min(current_backoff * backoff_mult, retry_max)
+                        next_tick = time.monotonic()
                         continue
                 except Exception as exc:
                     logger.error("PLC connection exception: %s. Retrying in %.1fs...", exc, current_backoff)
                     time.sleep(current_backoff)
                     current_backoff = min(current_backoff * backoff_mult, retry_max)
+                    next_tick = time.monotonic()
                     continue
 
             # 2. Sample telemetry
@@ -230,19 +236,23 @@ class PollerApp:
                 self.plc_client.disconnect()
                 time.sleep(current_backoff)
                 current_backoff = min(current_backoff * backoff_mult, retry_max)
+                next_tick = time.monotonic()
                 continue
             except Exception as exc:
                 logger.error("Unexpected error during polling cycle: %s", exc, exc_info=True)
 
-            # 3. Maintain consistent sampling period
-            elapsed = time.time() - loop_start
-            sleep_time = max(0.0, poll_interval - elapsed)
+            # 3. Maintain consistent 3.0s cadence with monotonic drift compensation
+            next_tick += poll_interval
+            now_mono = time.monotonic()
+            if next_tick < now_mono:
+                # Catch up if delayed by heavy network interruption
+                next_tick = now_mono + poll_interval
+            sleep_time = max(0.0, next_tick - now_mono)
             time.sleep(sleep_time)
 
         # Cleanup on exit
         logger.info("Flushing pending buffer records to disk...")
-        flushed = self.buffer.flush()
-        logger.info("Flushed %d remaining records.", flushed)
+        self.buffer.close()
         self.plc_client.disconnect()
         logger.info("Poller Service terminated cleanly.")
 

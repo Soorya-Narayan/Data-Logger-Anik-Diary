@@ -22,6 +22,33 @@ from src.reports.generator import ExcelReportGenerator
 logger = logging.getLogger("ReportScheduler")
 
 
+def filter_records_interval(records: list, interval_sec: float = 3.0) -> list:
+    """Filters records to guarantee exact target sampling cadence (e.g. 3-second intervals).
+
+    Downsamples sub-3s historical data to 3-second intervals,
+    while retaining all records if already sampled at 3-second cadence.
+    """
+    if not records:
+        return []
+    filtered = []
+    last_ts = None
+    for r in records:
+        ts_str = r.get("timestamp")
+        if not ts_str:
+            continue
+        try:
+            dt = datetime.fromisoformat(ts_str)
+            ts_epoch = dt.timestamp()
+        except Exception:
+            ts_epoch = None
+
+        if last_ts is None or ts_epoch is None or (ts_epoch - last_ts) >= (interval_sec - 0.5):
+            filtered.append(r)
+            if ts_epoch is not None:
+                last_ts = ts_epoch
+    return filtered
+
+
 class ReportScheduler:
     """Manages scheduled report generation and optional email transmission."""
 
@@ -111,6 +138,9 @@ class ReportScheduler:
             logger.warning("No records found in database for 24h window %s to %s", start.isoformat(), now.isoformat())
             return None
 
+        # Ensure telemetry report data is sampled strictly at 3-second intervals
+        rows = filter_records_interval(rows, interval_sec=3.0)
+
         with open(file_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             # Write 38-instrument header row
@@ -128,7 +158,7 @@ class ReportScheduler:
                     row_vals.append(val)
                 writer.writerow(row_vals)
 
-        logger.info("Generated 24-hour CSV telemetry log: %s (%d records)", file_path, len(rows))
+        logger.info("Generated 24-hour CSV telemetry log: %s (%d records at 3s intervals)", file_path, len(rows))
 
         title = f"Daily 24h Process Telemetry CSV ({start.strftime('%d-%b-%Y')})"
         if self.config.get("reporting", {}).get("email", {}).get("enabled", False):

@@ -209,7 +209,13 @@ def export_csv():
 
     rows = db.get_records_between(start.isoformat(), now.isoformat())
     if not rows:
-        rows = db.get_recent_records(limit=int(hours * 3600))
+        rows = db.get_recent_records(limit=int(hours * 1200))
+
+    try:
+        from src.reports.scheduler import filter_records_interval
+        rows = filter_records_interval(rows, interval_sec=3.0)
+    except Exception:
+        pass
 
     # Import column definitions from the report generator to stay in sync
     try:

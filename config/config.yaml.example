@@ -34,16 +34,16 @@ plc:
     dropout_duration_cycles: 3   # cycles to stay disconnected before recovery
 
 polling:
-  # Polling interval in seconds (1-second resolution recommended)
-  interval_seconds: 1.0
+  # Polling and data logging interval in seconds (3-second interval)
+  interval_seconds: 3.0
 
 storage:
   # SQLite database path (relative to project root)
   db_path: "data/pasteurizer_data.db"
 
   # SD Card Optimization: buffer writes and flush in atomic batches
-  # Flush every 3 s OR when buffer reaches 5 records — whichever comes first
-  batch_flush_seconds: 3.0
+  # Flush every 9 s OR when buffer reaches 5 records (15s) — whichever comes first
+  batch_flush_seconds: 9.0
   batch_max_size: 5
 
   # SQLite WAL checkpoint interval (pages)
@@ -72,8 +72,8 @@ reporting:
   # Daily summary generated at this hour, covering previous 24 h
   daily_report_hour: 6
 
-  # Excel report sample interval (1 = full 1-sec, 5 or 10 for compact audit logs)
-  excel_sample_interval_sec: 1
+  # Report sample interval in seconds (3-second interval)
+  excel_sample_interval_sec: 3
 
   # Automated SMTP Email Dispatch for Daily Reports
   email:
