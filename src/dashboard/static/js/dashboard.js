@@ -238,6 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 1. Process State Banner
         statusText.textContent = d.status || "STANDBY";
         valProduct.textContent = d.product || "--";
+        const sampleTime = d.timestamp ? new Date(d.timestamp) : new Date();
         const refreshSec = Math.round((window.POLL_INTERVAL_MS || 3000) / 1000);
         lastUpdateText.textContent = "Last sample: " + sampleTime.toLocaleTimeString() + " (" + refreshSec + "s Refresh)";
 
