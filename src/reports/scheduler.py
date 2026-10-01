@@ -11,7 +11,10 @@ import logging
 from pathlib import Path
 from email.message import EmailMessage
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List, Union
+from pathlib import Path
+from email.message import EmailMessage
+from datetime import datetime, timedelta
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
@@ -82,6 +85,17 @@ class ReportScheduler:
             plant_info=self.config.get("plant", {})
         )
 
+        try:
+            from src.reports.pdf_generator import PDFReportGenerator
+            self.pdf_generator = PDFReportGenerator(
+                db_manager=self.db,
+                output_dir=out_dir,
+                plant_info=self.config.get("plant", {})
+            )
+        except Exception as exc:
+            logger.warning("Could not initialize PDFReportGenerator: %s", exc)
+            self.pdf_generator = None
+
     def generate_shift_report(self, shift_hours_back: int = 8) -> Optional[Path]:
         """Generate a report for the previous shift window."""
         now = datetime.now()
@@ -120,8 +134,8 @@ class ReportScheduler:
 
         return path
 
-    def generate_daily_csv_report(self, hours_back: int = 24) -> Optional[Path]:
-        """Generate a 24-hour raw CSV telemetry log covering all 38 SCADA instruments and email it."""
+    def generate_daily_csv_report(self, hours_back: int = 24, send_mail: bool = True) -> Optional[Path]:
+        """Generate a 24-hour raw CSV telemetry log covering all 58 SCADA instruments."""
         import csv
         from src.reports.generator import ALL_COLUMNS, BOOL_FIELDS, _format_bool
 
@@ -143,7 +157,7 @@ class ReportScheduler:
 
         with open(file_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            # Write 38-instrument header row
+            # Write 58-instrument header row
             writer.writerow([col_name for col_name, _, _ in ALL_COLUMNS])
 
             # Write data rows
@@ -161,69 +175,148 @@ class ReportScheduler:
         logger.info("Generated 24-hour CSV telemetry log: %s (%d records at 3s intervals)", file_path, len(rows))
 
         title = f"Daily 24h Process Telemetry CSV ({start.strftime('%d-%b-%Y')})"
-        if self.config.get("reporting", {}).get("email", {}).get("enabled", False):
+        if send_mail and self.config.get("reporting", {}).get("email", {}).get("enabled", False):
             self.send_email(file_path, title)
 
         return file_path
 
-    def send_email(self, file_path: Path, subject: str) -> bool:
-        """Send generated report via SMTP with auto-detected MIME type."""
+    def generate_daily_package(self, hours_back: int = 24) -> List[Path]:
+        """Generate both corporate audit PDF report and 24-hour CSV telemetry log,
+
+        and dispatch them together in a SINGLE consolidated email.
+        """
+        now = datetime.now()
+        start = now - timedelta(hours=hours_back)
+        date_str = start.strftime("%d-%b-%Y")
+        attachments: List[Path] = []
+
+        # 1. Generate Audit PDF Report
+        if self.pdf_generator:
+            try:
+                pdf_title = f"Pasteurizer Quality Audit Report ({hours_back}h Window)"
+                pdf_path = self.pdf_generator.generate_pdf(
+                    start_iso=start.isoformat(),
+                    end_iso=now.isoformat(),
+                    report_title=pdf_title,
+                    sample_step=1
+                )
+                if pdf_path and pdf_path.exists():
+                    attachments.append(pdf_path)
+                    logger.info("Attached Audit PDF to daily package: %s", pdf_path.name)
+            except Exception as exc:
+                logger.error("Failed to generate PDF for daily package: %s", exc)
+
+        # 2. Generate 24h CSV Telemetry Log (All 58 columns at 3-second intervals)
+        try:
+            csv_path = self.generate_daily_csv_report(hours_back=hours_back, send_mail=False)
+            if csv_path and csv_path.exists():
+                attachments.append(csv_path)
+                logger.info("Attached Telemetry CSV to daily package: %s", csv_path.name)
+        except Exception as exc:
+            logger.error("Failed to generate CSV for daily package: %s", exc)
+
+        # 3. Transmit consolidated package in a SINGLE email
+        if attachments and self.config.get("reporting", {}).get("email", {}).get("enabled", False):
+            subject = f"Daily Process Audit & Telemetry Report ({date_str})"
+            self.send_email(attachments, subject)
+
+        return attachments
+
+    def send_email(
+        self,
+        file_paths: Union[Path, List[Path], str],
+        subject: str,
+        body_text: Optional[str] = None
+    ) -> bool:
+        """Send generated report(s) via SMTP with auto-detected MIME type in a single email."""
         mail_cfg = self.config.get("reporting", {}).get("email", {})
         if not mail_cfg.get("enabled", False):
             logger.info("Email dispatch disabled in configuration.")
             return False
 
-        try:
-            # Prevent email bounce: if file exceeds 20MB, automatically compress to .zip
-            actual_path = file_path
-            if file_path.stat().st_size > 20 * 1024 * 1024:
-                import zipfile
-                zip_path = file_path.with_name(f"{file_path.stem}.zip")
-                logger.info(
-                    "Report file '%s' is %d MB (>20 MB). Compressing to '%s' for safe SMTP delivery...",
-                    file_path.name,
-                    file_path.stat().st_size // (1024 * 1024),
-                    zip_path.name
-                )
-                with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-                    zf.write(file_path, arcname=file_path.name)
-                actual_path = zip_path
+        if isinstance(file_paths, (str, Path)):
+            raw_paths = [Path(file_paths)]
+        else:
+            raw_paths = [Path(p) for p in file_paths if p]
 
-            logger.info("Sending report '%s' via SMTP to %s...", actual_path.name, mail_cfg.get("recipients"))
-            msg = EmailMessage()
-            msg["Subject"] = f"[{self.config.get('plant', {}).get('name')}] {subject}"
-            msg["From"] = mail_cfg.get("sender")
-            msg["To"] = ", ".join(mail_cfg.get("recipients", []))
-            msg.set_content(
-                f"Hello,\n\n"
-                f"Attached is the automated daily process telemetry report from the 10 KL Pasteurizer Data Logger at Anik Dairy (Bhopal).\n\n"
-                f"Report Details:\n"
-                f"• Equipment: {self.config.get('plant', {}).get('unit')}\n"
-                f"• Generated At: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-                f"• File Name: {actual_path.name}\n"
-                f"• Format: {actual_path.suffix.upper().replace('.', '')}\n\n"
-                f"This is an automated transmission from the on-premise industrial data logger node."
+        valid_paths = [p for p in raw_paths if p.exists()]
+        if not valid_paths:
+            logger.warning("No valid report files found to send via email.")
+            return False
+
+        try:
+            processed_attachments: List[Path] = []
+            file_summaries: List[str] = []
+
+            for p in valid_paths:
+                actual_p = p
+                # If file exceeds 20MB, compress to .zip
+                if p.stat().st_size > 20 * 1024 * 1024:
+                    import zipfile
+                    zip_path = p.with_name(f"{p.stem}.zip")
+                    logger.info("File '%s' is %d MB (>20 MB). Compressing to '%s'...", p.name, p.stat().st_size // (1024 * 1024), zip_path.name)
+                    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                        zf.write(p, arcname=p.name)
+                    actual_p = zip_path
+
+                size_kb = actual_p.stat().st_size / 1024
+                size_str = f"{size_kb / 1024:.1f} MB" if size_kb > 1024 else f"{size_kb:.0f} KB"
+                file_summaries.append(f"  • {actual_p.name} ({actual_p.suffix.upper().replace('.', '')} - {size_str})")
+                processed_attachments.append(actual_p)
+
+            logger.info(
+                "Sending consolidated report email with %d attachment(s) [%s] to %s...",
+                len(processed_attachments),
+                ", ".join(p.name for p in processed_attachments),
+                mail_cfg.get("recipients")
             )
 
-            # Determine MIME type based on file extension
-            ext = actual_path.suffix.lower()
-            if ext == ".csv":
-                maintype, subtype = "text", "csv"
-            elif ext == ".pdf":
-                maintype, subtype = "application", "pdf"
-            elif ext == ".zip":
-                maintype, subtype = "application", "zip"
-            else:
-                maintype, subtype = "application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            msg = EmailMessage()
+            plant_name = self.config.get("plant", {}).get("name", "Anik Dairy")
+            unit_name = self.config.get("plant", {}).get("unit", "10 KL Pasteurizer")
 
-            with open(actual_path, "rb") as f:
-                file_data = f.read()
-                msg.add_attachment(
-                    file_data,
-                    maintype=maintype,
-                    subtype=subtype,
-                    filename=actual_path.name
+            msg["Subject"] = f"[{plant_name}] {subject}"
+            msg["From"] = mail_cfg.get("sender")
+            msg["To"] = ", ".join(mail_cfg.get("recipients", []))
+
+            if not body_text:
+                files_block = "\n".join(file_summaries)
+                body_text = (
+                    f"Hello,\n\n"
+                    f"Please find attached the automated daily process telemetry reports for the {unit_name} at {plant_name} (Bhopal Plant).\n\n"
+                    f"Report Package Summary:\n"
+                    f"• Equipment: {unit_name}\n"
+                    f"• Generated At: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+                    f"• Attached Reports ({len(processed_attachments)}):\n"
+                    f"{files_block}\n\n"
+                    f"Contents Included:\n"
+                    f"1. Executive PDF Audit Report: Visualized temperature profiles, Critical Control Point (TT06 CCP) status, alarms, and plant hydraulics.\n"
+                    f"2. Daily CSV Telemetry Log: Full 58-column instrument SCADA export sampled at 3-second logging intervals.\n\n"
+                    f"This is an automated transmission from the on-premise industrial data logger node."
                 )
+
+            msg.set_content(body_text)
+
+            # Attach all processed files to the single EmailMessage
+            for p in processed_attachments:
+                ext = p.suffix.lower()
+                if ext == ".csv":
+                    maintype, subtype = "text", "csv"
+                elif ext == ".pdf":
+                    maintype, subtype = "application", "pdf"
+                elif ext == ".zip":
+                    maintype, subtype = "application", "zip"
+                else:
+                    maintype, subtype = "application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+                with open(p, "rb") as f:
+                    file_data = f.read()
+                    msg.add_attachment(
+                        file_data,
+                        maintype=maintype,
+                        subtype=subtype,
+                        filename=p.name
+                    )
 
             server = mail_cfg.get("smtp_server")
             port = int(mail_cfg.get("smtp_port", 587))
@@ -245,7 +338,7 @@ class ReportScheduler:
                         smtp.login(mail_cfg["username"], mail_cfg["password"])
                     smtp.send_message(msg)
 
-            logger.info("Email sent successfully to %s.", mail_cfg.get("recipients"))
+            logger.info("Consolidated email with %d attachment(s) sent successfully to %s.", len(processed_attachments), mail_cfg.get("recipients"))
             return True
 
         except Exception as exc:
@@ -257,21 +350,26 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
     scheduler = ReportScheduler()
 
-    # CLI dispatch: --daily-csv, --daily (Excel), or default shift
+    # CLI dispatch: --daily (combined PDF + CSV package), --daily-csv, --pdf, or --shift
     if len(sys.argv) > 1:
         arg = sys.argv[1].lower()
-        if arg in ("--daily-csv", "--csv"):
+        if arg in ("--daily", "--package", "--all"):
+            scheduler.generate_daily_package()
+        elif arg in ("--daily-csv", "--csv"):
             scheduler.generate_daily_csv_report()
-        elif arg == "--daily":
-            # Check configured report format preference
-            fmt = scheduler.config.get("reporting", {}).get("format", "csv").lower()
-            if "csv" in fmt:
-                scheduler.generate_daily_csv_report()
-            if "excel" in fmt or "xlsx" in fmt:
-                scheduler.generate_daily_report()
+        elif arg == "--pdf":
+            now = datetime.now()
+            start = now - timedelta(hours=24)
+            if scheduler.pdf_generator:
+                p = scheduler.pdf_generator.generate_pdf(
+                    start.isoformat(), now.isoformat(), f"Quality Audit Report ({start.strftime('%d-%b-%Y')})"
+                )
+                if p:
+                    scheduler.send_email(p, f"Quality Audit Report PDF ({start.strftime('%d-%b-%Y')})")
         elif arg == "--shift":
             scheduler.generate_shift_report()
         else:
-            print(f"Unknown option '{arg}'. Usage: python scheduler.py [--daily-csv | --daily | --shift]")
+            print(f"Unknown option '{arg}'. Usage: python scheduler.py [--daily | --daily-csv | --pdf | --shift]")
     else:
-        scheduler.generate_daily_csv_report()
+        # Default scheduled execution sends both PDF and CSV together in the same email
+        scheduler.generate_daily_package()
