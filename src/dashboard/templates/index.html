@@ -8,11 +8,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=anik_trend_v1">
+  <link rel="stylesheet" href="/static/css/style.css?v=anik_splash_v1">
   <!-- Chart.js for live trends -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="scada-body">
+  <!-- Minimalist Loading Screen (Strictly Anik Logo, Goose Logo, and Version Number) -->
+  <div id="app-loading-screen" class="loading-screen">
+    <div class="loading-content">
+      <div class="loading-logos">
+        <img src="/static/img/anik_logo.png" alt="Anik Dairy Logo" class="loading-logo anik-splash-logo">
+        <img src="/static/img/goose_logo.png" alt="Goose - The Brand of Nature" class="loading-logo goose-splash-logo">
+      </div>
+      <div class="loading-version">{{ app_version }}</div>
+    </div>
+  </div>
+
   <div class="app-layout">
     <!-- 1. Top Industrial SCADA Navbar -->
     <header class="navbar glass-card">
@@ -697,6 +708,6 @@
   <script>
     window.POLL_INTERVAL_MS = {{ poll_interval }};
   </script>
-  <script src="/static/js/dashboard.js?v=anik_trend_v1"></script>
+  <script src="/static/js/dashboard.js?v=anik_splash_v1"></script>
 </body>
 </html>

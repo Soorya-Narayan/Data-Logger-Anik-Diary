@@ -60,6 +60,9 @@ except ImportError as err:
     print(f"[Warning] PDF generator not loaded ({err}). Install reportlab and pillow.")
 
 
+APP_VERSION = "v3.4.0"
+
+
 @app.route("/")
 def index():
     """Main dashboard interface."""
@@ -75,7 +78,8 @@ def index():
         reference_line=plant_info.get("reference_line", "PHE-3"),
         plc_mode=plc_mode,
         plc_ip=plc_ip,
-        poll_interval=poll_interval
+        poll_interval=poll_interval,
+        app_version=APP_VERSION
     )
 
 

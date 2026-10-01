@@ -732,6 +732,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Dismiss Minimalist Loading Screen
+  function dismissLoadingScreen() {
+    const loader = document.getElementById("app-loading-screen");
+    if (!loader) return;
+    loader.classList.add("fade-out");
+    setTimeout(() => {
+      if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+    }, 500);
+  }
+
+  // Dismiss loading screen smoothly after 1.2s splash
+  setTimeout(dismissLoadingScreen, 1200);
+
   // Start initialization
   initChart();
   pollCurrent();
