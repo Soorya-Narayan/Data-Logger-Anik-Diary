@@ -27,39 +27,63 @@ This project provides a complete, lightweight, and resilient data logging soluti
 
 The web supervisory console provides operators and plant engineers with real-time visibility across all 30 pasteurizer instruments, thermal profiles, hydraulic pressures, valves, and multi-axis telemetric trend curves.
 
-### 1. Supervisory Overview & Plant KPIs
+### 1. Minimalist Startup & Version Splash Screen (`v3.4.0`)
+Clean industrial splash interface showcasing official Anik Dairy and Goose automation branding alongside active firmware/daemon release verification.
+
+<div align="center">
+  <img src="docs/assets/loading_screen.png" alt="Anik Dairy and Goose Splash Screen v3.4.0" width="70%" />
+</div>
+
+### 2. Supervisory Overview & Master Plant KPIs
 Comprehensive supervisory view displaying plant process state (`ON` / `AUTO MODE`), master alarm annunciator bar, real-time clock, shift totalizer (`79,547.6 L`), and critical pasteurization indicators.
 
 <div align="center">
   <img src="docs/assets/dashboard_overview.png" alt="Supervisory SCADA Dashboard Overview" width="95%" />
 </div>
 
-### 2. Thermal Profile & Temperature Transmitters (TT01 – TT09)
+### 3. Thermal Profile & Temperature Transmitters (TT01 – TT09)
 Continuous legal pasteurization tracking across all 9 thermal zones, including Infeed Channel (`TT-01`), Legal Pasteurization Point (`TT-05` [CRITICAL]), Holding Verification (`TT-06`), Chilling Loop (`TT-08`), and Differential Delta-T across the PHE.
 
 <div align="center">
   <img src="docs/assets/thermal_profile.png" alt="Thermal Profile TT01-TT09" width="95%" />
 </div>
 
-### 3. Hydraulic Profile & Pressure Transmitters (PT01 – PT06)
+### 4. Hydraulic Profile & Pressure Transmitters (PT01 – PT06)
 Differential line pressures across raw milk infeed, regeneration stages, holding tube inlet, chilled milk delivery, and hot water loops.
 
 <div align="center">
   <img src="docs/assets/hydraulic_profile.png" alt="Hydraulic Pressure Profile PT01-PT06" width="95%" />
 </div>
 
-### 4. Process Control, Mass Flow & Vessel Gauges
+### 5. Process Control, Mass Flow & Vessel Gauges
 Electromagnetic flow meter telemetry (`FIT-101`), cumulative product batch volume totalizer (`TOT-01`), steam modulating control valve position (`CV-101`), and deodoriser vessel hydrostatic level.
 
 <div align="center">
   <img src="docs/assets/process_control.png" alt="Process Control & Mass Flow" width="95%" />
 </div>
 
-### 5. Multi-Axis Telemetric Trend Analysis
+### 6. Valve Position Interlocks, Diversions & CIP Sequence (SEC 05)
+Direct monitoring of Flow Diversion Valves (`FDV-1`, `FDV-2`), interlock diagnostic diversion reasons (`FLOW FORWARD`, `CHILLED WATER PRESSURE HIGH`), manual circulation override statuses, and Clean-In-Place (`CIP`) sequence states.
+
+<div align="center">
+  <img src="docs/assets/valves_interlocks.png" alt="Valve Position Interlocks & Diversions" width="95%" />
+</div>
+
+### 7. Multi-Axis Telemetric Trend Analysis (SEC 06)
 Interactive multi-axis time-series visualization with 4 simultaneous Y-axes: **Temperature (°C)**, **Flow Rate (L/H)**, **Pressure (Bar)**, and **Control/Level (%)**. Features instant time window switching (15M, 30M, 1H, 4H), dynamic channel chip toggles, and live min/max/average telemetric statistics strip.
 
 <div align="center">
   <img src="docs/assets/trend_analysis.png" alt="Multi-Axis Telemetric Trend Analysis" width="95%" />
+</div>
+
+### 8. One-Click Multi-Format Reporting & Export Modal
+Integrated modal for generating audit-grade telemetric exports across selectable durations (`1h`, `4h`, `8h Shift`, `24h`):
+- **PDF Quality Audit Report**: Print-ready executive document with corporate branding and KPI tables.
+- **XLS SCADA Telemetry Workbook**: Multi-sheet formatted Excel workbook with automated charts.
+- **CSV Raw Telemetry Dataset**: Complete 1-second sampled telemetric log.
+
+<div align="center">
+  <img src="docs/assets/reports_export_menu.png" alt="One-Click Multi-Format Reporting Modal" width="55%" />
 </div>
 
 ---
