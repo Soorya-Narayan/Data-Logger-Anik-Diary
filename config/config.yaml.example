@@ -63,6 +63,9 @@ dashboard:
 reporting:
   output_dir: "reports"
 
+  # Report formats: "csv" (default), "excel", or "both"
+  format: "csv"
+
   # Shift change hours (24-hour): Shift 1 (06:00), Shift 2 (14:00), Shift 3 (22:00)
   shift_hours: [6, 14, 22]
 
@@ -72,15 +75,16 @@ reporting:
   # Excel report sample interval (1 = full 1-sec, 5 or 10 for compact audit logs)
   excel_sample_interval_sec: 1
 
-  # Optional SMTP email dispatch (disabled by default)
+  # Automated SMTP Email Dispatch for Daily Reports
   email:
-    enabled: false
-    smtp_server: "smtp.gmail.com"
-    smtp_port: 587
+    enabled: false                   # Set to true to activate automated daily email dispatch
+    smtp_server: "smtp.gmail.com"   # SMTP relay: "smtp.gmail.com", "smtp.office365.com", or plant local relay
+    smtp_port: 587                  # 587 (TLS/STARTTLS) or 465 (SSL)
     use_tls: true
     username: "YOUR_EMAIL@example.com"
-    password: "YOUR_APP_PASSWORD_HERE"
-    sender: "pasteurizer.reports@example.com"
+    password: "YOUR_APP_PASSWORD_HERE"  # Google 16-character App Password or SMTP token
+    sender: "pasteurizer.reports@anikdairy.com"
     recipients:
-      - "plant.manager@example.com"
-      - "quality.assurance@example.com"
+      - "plant.manager@anikdairy.com"
+      - "quality.assurance@anikdairy.com"
+      - "automation.engineer@anikdairy.com"
