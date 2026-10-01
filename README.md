@@ -23,15 +23,15 @@ This project provides a complete, lightweight, and resilient data logging soluti
 
 ---
 
-## Live Supervisory SCADA Dashboard (v3.4.0)
+## Live Supervisory SCADA Dashboard (v3.5.0)
 
 The web supervisory console provides operators and plant engineers with real-time visibility across all 30 pasteurizer instruments, thermal profiles, hydraulic pressures, valves, and multi-axis telemetric trend curves.
 
-### 1. Minimalist Startup & Version Splash Screen (`v3.4.0`)
+### 1. Minimalist Startup & Version Splash Screen (`v3.5.0`)
 Clean industrial splash interface showcasing official Anik Dairy and Goose automation branding alongside active firmware/daemon release verification.
 
 <div align="center">
-  <img src="docs/assets/loading_screen.png" alt="Anik Dairy and Goose Splash Screen v3.4.0" width="70%" />
+  <img src="docs/assets/loading_screen.png" alt="Anik Dairy and Goose Splash Screen v3.5.0" width="70%" />
 </div>
 
 ### 2. Supervisory Overview & Master Plant KPIs
@@ -437,3 +437,44 @@ When arriving on-site at Anik Dairy to connect to the physical Allen-Bradley Mic
       sudo journalctl -u pasteurizer-poller.service -f
     - Confirm no repeated disconnects or unhandled exceptions.
 ```
+
+---
+
+## Release Notes (v3.5.0)
+
+### Major Additions & Enhancements:
+1. **Strict 3-Second Data Logging Cadence**:
+   - Poller uses monotonic clocking (`time.monotonic()`) eliminating timing drift across continuous 24/7 logging.
+   - Non-blocking `DataBufferWorker` write-behind thread buffers live telemetry in memory and asynchronously flushes batches to SQLite without blocking acquisition cycles.
+2. **Complete 16-Channel Temperature Transmitter (TT01 – TT16) Mapping**:
+   - `TT-01`: Product Inlet Temperature
+   - `TT-02` & `TT-03`: Regeneration 1 & 2 Inlet Temperatures
+   - `TT-05`: Holding Tube Inlet Temperature
+   - `TT-06`: Legal Pasteurization Point (CCP Critical Control Point with golden highlight)
+   - `TT-08`: Holding Outlet Temperature 2
+   - `TT-11`: Regeneration 1 Outlet Temperature
+   - `TT-12`: Product Outlet Temperature
+   - `TT-13` & `TT-14`: Standby / Not Connected channels clearly labeled
+   - `TT-15` & `TT-16`: Chiller Inlet & Outlet Temperatures
+3. **Full 58-Instrument SCADA Schema Parity**:
+   - Standardized `ALL_COLUMNS` schema across CSV exports, Excel workbooks, and automated email attachments.
+   - Full parity between on-premise dashboard downloads and automated email dispatches.
+4. **Audit-Grade Corporate PDF Quality Reports**:
+   - Letter-landscape layout strictly bounded to 10.2 inches ($734.4\text{ pt}$) printable width with zero horizontal clipping.
+   - Dual-section SCADA presentation:
+     - **Section 1**: Thermal Pasteurization & CCP Audit Log (18 columns with `TT-06 CCP` highlighting)
+     - **Section 2**: Plant Hydraulics, Pressures, Energy Setpoints & Auxiliary Log (19 columns)
+   - Real-time Pasteurization CCP compliance status, plant efficiency KPIs, and alarms.
+5. **Automated Shift-Wise Reporting Engine**:
+   - Automatic shift window detection and execution matching plant operations:
+     - **1st Shift**: 06:30 AM to 02:00 PM (Generated & dispatched at 14:00:00 IST)
+     - **2nd Shift**: 02:00 PM to 10:00 PM (Generated & dispatched at 22:00:00 IST)
+     - **3rd Shift**: 10:00 PM to 06:30 AM (Generated & dispatched at 06:30:00 IST)
+6. **Consolidated Multi-Attachment Email Dispatch**:
+   - Transmits both the **Audit PDF Report** and the **Full 58-Column CSV Telemetry Log** together in a single email.
+   - Native support for Zoho Mail SSL on port 465 and standard SMTP STARTTLS on port 587.
+7. **Streamlined 58-Column Excel (.xlsx) Export**:
+   - Replaced multi-sheet summary layout with a single, high-performance `Telemetry Data` worksheet mirroring CSV data.
+   - Freeze panes (`A2`) and native Excel AutoFilter enabled across all 58 columns.
+8. **Dashboard Shift Export Selector**:
+   - Quick-select buttons for Current Shift, Shift 1, Shift 2, Shift 3, and 24h duration in the export modal.

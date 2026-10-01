@@ -60,7 +60,7 @@ except ImportError as err:
     print(f"[Warning] PDF generator not loaded ({err}). Install reportlab and pillow.")
 
 
-APP_VERSION = "v3.4.0"
+APP_VERSION = "v3.5.0"
 
 
 @app.route("/")
