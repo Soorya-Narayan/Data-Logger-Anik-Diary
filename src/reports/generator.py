@@ -145,19 +145,11 @@ class ExcelReportGenerator:
         report_title: str = "Shift Process Report",
         sample_step: int = 1
     ) -> Optional[Path]:
-        """
-        Generate an Excel report for the given time window.
+        """Generate a clean Excel (.xlsx) workbook containing the exact same 58-column
 
-        Args:
-            start_iso: Start timestamp in ISO format (e.g. '2026-09-22T06:00:00')
-            end_iso: End timestamp in ISO format
-            report_title: Title header for the report
-            sample_step: Downsampling factor (1 = every second, 5 = every 5s, etc.)
-
-        Returns:
-            Path to generated .xlsx file or None if no data.
+        SCADA telemetry data as the CSV export, without charts or extra summary tabs.
         """
-        logger.info("Generating report '%s' from %s to %s...", report_title, start_iso, end_iso)
+        logger.info("Generating Excel report '%s' from %s to %s...", report_title, start_iso, end_iso)
         raw_records = self.db.get_records_between(start_iso, end_iso)
 
         if not raw_records:
@@ -167,20 +159,47 @@ class ExcelReportGenerator:
         from src.reports.scheduler import filter_records_interval
         raw_records = filter_records_interval(raw_records, interval_sec=3.0)
         records = raw_records[::sample_step] if sample_step > 1 else raw_records
-        df = pd.DataFrame(records)
-
-        kpis = self._calculate_kpis(df, raw_records)
 
         wb = openpyxl.Workbook()
-        ws_summary = wb.active
-        ws_summary.title = "Executive Summary"
-        ws_data = wb.create_sheet(title="Full Telemetry Log")
-        ws_csv_ready = wb.create_sheet(title="CSV-Ready Data")
+        ws = wb.active
+        ws.title = "Telemetry Data"
+        ws.views.sheetView[0].showGridLines = True
+        ws.freeze_panes = "A2"
 
-        self._build_summary_sheet(ws_summary, report_title, start_iso, end_iso, kpis)
-        self._build_data_sheet(ws_data, df)
-        self._build_csv_ready_sheet(ws_csv_ready, df)
-        self._embed_trend_chart(ws_summary, ws_data, len(df))
+        header_fill = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
+        header_font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
+
+        # Write header row matching all 58 columns
+        headers = [col_name for col_name, _, _ in ALL_COLUMNS]
+        ws.append(headers)
+        for cell in ws[1]:
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=False)
+        ws.row_dimensions[1].height = 28
+
+        # Write data rows
+        for r in records:
+            row_vals = []
+            for col_name, field, _ in ALL_COLUMNS:
+                val = r.get(field)
+                if field in BOOL_FIELDS:
+                    val = _format_bool(field, val)
+                elif field == "timestamp" and isinstance(val, str) and "T" in val:
+                    val = val.replace("T", " ")[:19]
+                elif val is None or (isinstance(val, float) and pd.isna(val)):
+                    val = ""
+                row_vals.append(val)
+            ws.append(row_vals)
+
+        # Set column widths & auto-filter
+        for col_idx, (col_name, field, _) in enumerate(ALL_COLUMNS, 1):
+            col_letter = get_column_letter(col_idx)
+            ws.column_dimensions[col_letter].width = max(len(col_name) + 3, 14)
+        ws.column_dimensions["A"].width = 22
+
+        total_rows = len(records) + 1
+        ws.auto_filter.ref = f"A1:{get_column_letter(len(ALL_COLUMNS))}{total_rows}"
 
         start_dt = datetime.fromisoformat(start_iso.replace("Z", ""))
         date_str = start_dt.strftime("%Y%m%d_%H%M")
@@ -189,7 +208,7 @@ class ExcelReportGenerator:
         target_path = self.output_dir / filename
 
         wb.save(target_path)
-        logger.info("Report generated successfully at: %s", target_path)
+        logger.info("Excel report generated successfully at: %s (%d records)", target_path, len(records))
         return target_path
 
     def generate_csv(
