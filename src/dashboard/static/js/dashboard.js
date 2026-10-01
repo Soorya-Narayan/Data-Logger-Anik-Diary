@@ -141,7 +141,97 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Chart initialization
+  // Multi-Profile Trend System
+  let activeProfile = "overview";
+  let lastHistoryRecords = [];
+
+  const TREND_PROFILES = {
+    overview: {
+      title: "Master Process Telemetry Overview",
+      subtitle: "Multi-axis real-time curves for critical pasteurization instruments",
+      primaryKey: "temp_holding_out1_tt05",
+      primaryLabel: "TT05 Holding",
+      primaryUnit: "°C",
+      axes: ["yTemp", "yFlow", "yPress", "yPct"],
+      channels: [
+        { key: "temp_holding_out1_tt05", altKey: "holding_out_temp", label: "Holding TT05", tag: "TT-05", unit: "°C", color: "#D7262D", axis: "yTemp", width: 2.5, defaultOn: true },
+        { key: "temp_product_in_tt01", altKey: "holding_in_temp", label: "Infeed TT01", tag: "TT-01", unit: "°C", color: "#C28E3A", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "temp_chilling_tt08", label: "Chilling TT08", tag: "TT-08", unit: "°C", color: "#0284C7", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "feed_flow", altKey: "milk_flow", label: "Feed Flow FIT-101", tag: "FIT-101", unit: "L/H", color: "#006837", axis: "yFlow", width: 1.8, fill: true, defaultOn: true },
+        { key: "press_raw_milk_pt01", label: "Raw Milk PT01", tag: "PT-01", unit: "Bar", color: "#3B82F6", axis: "yPress", width: 1.6, defaultOn: false },
+        { key: "press_regen_r2_pt02", label: "Regen R2 PT02", tag: "PT-02", unit: "Bar", color: "#8B5CF6", axis: "yPress", width: 1.6, defaultOn: false },
+        { key: "steam_cv", label: "Steam CV", tag: "CV-01", unit: "%", color: "#EA580C", axis: "yPct", width: 1.6, defaultOn: false },
+        { key: "sp_heating_temp", label: "Heating SP (85°C)", tag: "SP-01", unit: "°C", color: "rgba(215, 38, 45, 0.5)", axis: "yTemp", width: 1.4, dash: [4, 4], defaultOn: true }
+      ]
+    },
+    temperatures: {
+      title: "Complete Thermal Profile (TT01 – TT09 & Delta-T)",
+      subtitle: "All 9 temperature transmitters and legal pasteurization holding verification",
+      primaryKey: "temp_holding_out1_tt05",
+      primaryLabel: "TT05 Holding",
+      primaryUnit: "°C",
+      axes: ["yTemp"],
+      channels: [
+        { key: "temp_holding_out1_tt05", altKey: "holding_out_temp", label: "Holding 1 TT05", tag: "TT-05", unit: "°C", color: "#D7262D", axis: "yTemp", width: 2.5, defaultOn: true },
+        { key: "temp_holding_out2_tt06", label: "Holding 2 TT06", tag: "TT-06", unit: "°C", color: "#9333EA", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "temp_holding_in_tt04", label: "Holding In TT04", tag: "TT-04", unit: "°C", color: "#F97316", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "temp_product_in_tt01", altKey: "holding_in_temp", label: "Product In TT01", tag: "TT-01", unit: "°C", color: "#C28E3A", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "temp_regen_r2_tt03", label: "Regen R2 TT03", tag: "TT-03", unit: "°C", color: "#EAB308", axis: "yTemp", width: 1.6, defaultOn: true },
+        { key: "temp_chilling_tt08", label: "Chilling TT08", tag: "TT-08", unit: "°C", color: "#0284C7", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "temp_chilled_milk_tt07", label: "Chilled Milk TT07", tag: "TT-07", unit: "°C", color: "#06B6D4", axis: "yTemp", width: 1.6, defaultOn: true },
+        { key: "temp_hot_water_tt09", label: "Hot Water TT09", tag: "TT-09", unit: "°C", color: "#EF4444", axis: "yTemp", width: 1.6, defaultOn: false },
+        { key: "delta_t", label: "Delta-T Differential", tag: "DIFF", unit: "°C", color: "#6366F1", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "sp_heating_temp", label: "Heating SP (85°C)", tag: "SP-01", unit: "°C", color: "rgba(215, 38, 45, 0.5)", axis: "yTemp", width: 1.5, dash: [4, 4], defaultOn: true }
+      ]
+    },
+    pressures: {
+      title: "Complete Hydraulic Pressure Profile (PT01 – PT06)",
+      subtitle: "Differential, pasteurizer backpressure, and chilled media curves",
+      primaryKey: "press_raw_milk_pt01",
+      primaryLabel: "PT01 Raw Milk",
+      primaryUnit: "Bar",
+      axes: ["yPress"],
+      channels: [
+        { key: "press_raw_milk_pt01", label: "Raw Milk PT01", tag: "PT-01", unit: "Bar", color: "#3B82F6", axis: "yPress", width: 2.0, defaultOn: true },
+        { key: "press_regen_r2_pt02", label: "Regen R2 PT02", tag: "PT-02", unit: "Bar", color: "#8B5CF6", axis: "yPress", width: 2.0, defaultOn: true },
+        { key: "press_holding_in_pt03", label: "Holding In PT03", tag: "PT-03", unit: "Bar", color: "#EC4899", axis: "yPress", width: 2.0, defaultOn: true },
+        { key: "press_chilled_milk_pt04", label: "Chilled Milk PT04", tag: "PT-04", unit: "Bar", color: "#14B8A6", axis: "yPress", width: 2.0, defaultOn: true },
+        { key: "press_hot_water_pt05", label: "Hot Water PT05", tag: "PT-05", unit: "Bar", color: "#F59E0B", axis: "yPress", width: 1.8, defaultOn: true },
+        { key: "press_chilling_pt06", label: "Chilling PT06", tag: "PT-06", unit: "Bar", color: "#64748B", axis: "yPress", width: 1.8, defaultOn: true },
+        { key: "sp_chilling_pressure", label: "Chilling SP (6.0 Bar)", tag: "SP-04", unit: "Bar", color: "rgba(100, 116, 139, 0.6)", axis: "yPress", width: 1.4, dash: [4, 4], defaultOn: false },
+        { key: "sp_regen_r1_pressure", label: "Regen SP (7.5 Bar)", tag: "SP-05", unit: "Bar", color: "rgba(139, 92, 246, 0.6)", axis: "yPress", width: 1.4, dash: [4, 4], defaultOn: false }
+      ]
+    },
+    flow: {
+      title: "Flow Rate & Mass Production Totalizer",
+      subtitle: "Instantaneous feed throughput rate (L/H) vs cumulative yield (Liters)",
+      primaryKey: "feed_flow",
+      primaryLabel: "FIT-101 Flow",
+      primaryUnit: "L/H",
+      axes: ["yFlow", "yTot"],
+      channels: [
+        { key: "feed_flow", altKey: "milk_flow", label: "Feed Flow FIT-101", tag: "FIT-101", unit: "L/H", color: "#006837", axis: "yFlow", width: 2.4, fill: true, defaultOn: true },
+        { key: "product_tot", label: "Accumulated Totalizer", tag: "TOT", unit: "L", color: "#10B981", axis: "yTot", width: 2.0, defaultOn: true }
+      ]
+    },
+    controls: {
+      title: "Process Control Loops, Levels & Setpoints",
+      subtitle: "Steam control valve modulation, vessel levels, and diversion setpoints",
+      primaryKey: "steam_cv",
+      primaryLabel: "Steam CV",
+      primaryUnit: "%",
+      axes: ["yPct", "yTemp"],
+      channels: [
+        { key: "steam_cv", label: "Steam CV Modulation", tag: "CV-01", unit: "%", color: "#EA580C", axis: "yPct", width: 2.2, fill: true, defaultOn: true },
+        { key: "deodoriser_level", label: "Deodoriser Level", tag: "LT-01", unit: "%", color: "#9333EA", axis: "yPct", width: 2.0, defaultOn: true },
+        { key: "regen_efficiency", label: "Regeneration Efficiency", tag: "EFF", unit: "%", color: "#0D9488", axis: "yPct", width: 2.0, defaultOn: true },
+        { key: "sp_heating_temp", label: "Heating SP (85°C)", tag: "SP-01", unit: "°C", color: "#D7262D", axis: "yTemp", width: 1.5, dash: [4, 4], defaultOn: true },
+        { key: "sp_chill_fdv_diversion", label: "Chill Diversion SP", tag: "SP-02", unit: "°C", color: "#0284C7", axis: "yTemp", width: 1.5, dash: [4, 4], defaultOn: true }
+      ]
+    }
+  };
+
+  // Chart initialization with multi-scale SCADA configuration
   function initChart() {
     if (window.Chart) {
       Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", sans-serif';
@@ -154,49 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "line",
       data: {
         labels: [],
-        datasets: [
-          {
-            label: "Holding Outlet TT05 (°C)",
-            data: [],
-            borderColor: "#D7262D",
-            backgroundColor: "rgba(215, 38, 45, 0.08)",
-            borderWidth: 2.2,
-            yAxisID: "yTemp",
-            tension: 0.15,
-            pointRadius: 0,
-          },
-          {
-            label: "Product In TT01 (°C)",
-            data: [],
-            borderColor: "#C28E3A",
-            backgroundColor: "rgba(194, 142, 58, 0.08)",
-            borderWidth: 1.8,
-            yAxisID: "yTemp",
-            tension: 0.15,
-            pointRadius: 0,
-          },
-          {
-            label: "Chilling TT08 (°C)",
-            data: [],
-            borderColor: "#0284C7",
-            backgroundColor: "rgba(2, 132, 199, 0.08)",
-            borderWidth: 1.8,
-            yAxisID: "yTemp",
-            tension: 0.15,
-            pointRadius: 0,
-          },
-          {
-            label: "Feed Flow (L/H)",
-            data: [],
-            borderColor: "#006837",
-            backgroundColor: "rgba(0, 104, 55, 0.08)",
-            borderWidth: 1.8,
-            fill: true,
-            yAxisID: "yFlow",
-            tension: 0.15,
-            pointRadius: 0,
-          }
-        ]
+        datasets: []
       },
       options: {
         responsive: true,
@@ -206,34 +254,231 @@ document.addEventListener("DOMContentLoaded", () => {
         scales: {
           x: {
             grid: { color: "rgba(21, 34, 56, 0.05)" },
-            ticks: { color: "#64748b", maxTicksLimit: 7, font: { size: 10 } }
+            ticks: { color: "#64748b", maxTicksLimit: 8, font: { size: 10 } }
           },
           yTemp: {
             type: "linear",
             position: "left",
-            title: { display: true, text: "Temperature (°C)", color: "#D7262D", font: { weight: "bold", size: 11 } },
+            display: true,
+            title: { display: true, text: "Temperature (°C)", color: "#D7262D", font: { weight: "bold", size: 10 } },
             suggestedMin: 0,
             suggestedMax: 100,
             grid: { color: "rgba(21, 34, 56, 0.05)" },
-            ticks: { color: "#152238" }
+            ticks: { color: "#D7262D", font: { size: 10 } }
           },
           yFlow: {
             type: "linear",
             position: "right",
-            title: { display: true, text: "Flow Rate (L/H)", color: "#006837", font: { weight: "bold", size: 11 } },
+            display: true,
+            title: { display: true, text: "Flow Rate (L/H)", color: "#006837", font: { weight: "bold", size: 10 } },
             suggestedMin: 0,
             suggestedMax: 30000,
             grid: { drawOnChartArea: false },
-            ticks: { color: "#006837" }
+            ticks: { color: "#006837", font: { size: 10 } }
+          },
+          yPress: {
+            type: "linear",
+            position: "right",
+            display: false,
+            title: { display: true, text: "Pressure (Bar)", color: "#7C3AED", font: { weight: "bold", size: 10 } },
+            suggestedMin: -3,
+            suggestedMax: 10,
+            grid: { drawOnChartArea: false },
+            ticks: { color: "#7C3AED", font: { size: 10 } }
+          },
+          yPct: {
+            type: "linear",
+            position: "right",
+            display: false,
+            title: { display: true, text: "Control / Level (%)", color: "#EA580C", font: { weight: "bold", size: 10 } },
+            suggestedMin: 0,
+            suggestedMax: 100,
+            grid: { drawOnChartArea: false },
+            ticks: { color: "#EA580C", font: { size: 10 } }
+          },
+          yTot: {
+            type: "linear",
+            position: "right",
+            display: false,
+            title: { display: true, text: "Totalizer (L)", color: "#10B981", font: { weight: "bold", size: 10 } },
+            grid: { drawOnChartArea: false },
+            ticks: { color: "#10B981", font: { size: 10 } }
           }
         },
         plugins: {
-          legend: {
-            labels: { color: "#152238", boxWidth: 12, padding: 12, font: { size: 11, weight: "bold" } }
-          }
+          legend: { display: false } // Legend is cleanly rendered in interactive chips above
         }
       }
     });
+
+    setupProfile("overview");
+  }
+
+  function setupProfile(profileName) {
+    activeProfile = profileName;
+    const prof = TREND_PROFILES[profileName] || TREND_PROFILES.overview;
+
+    const titleEl = document.getElementById("trend-section-title");
+    const subEl = document.getElementById("trend-section-subtitle");
+    const countEl = document.getElementById("trend-active-profile-count");
+
+    if (titleEl) titleEl.textContent = prof.title;
+    if (subEl) subEl.textContent = prof.subtitle;
+    if (countEl) countEl.textContent = prof.channels.length + " CHANNELS IN VIEW";
+
+    if (trendChart) {
+      trendChart.data.datasets = prof.channels.map(ch => ({
+        label: `${ch.label} (${ch.unit})`,
+        data: [],
+        borderColor: ch.color,
+        backgroundColor: ch.fill ? (ch.color.includes("rgba") ? ch.color : ch.color + "18") : "transparent",
+        borderWidth: ch.width || 1.8,
+        borderDash: ch.dash || [],
+        fill: !!ch.fill,
+        yAxisID: ch.axis || "yTemp",
+        tension: 0.15,
+        pointRadius: 0,
+        hidden: !ch.defaultOn
+      }));
+
+      const activeAxes = prof.axes || ["yTemp"];
+      trendChart.options.scales.yTemp.display = activeAxes.includes("yTemp");
+      trendChart.options.scales.yFlow.display = activeAxes.includes("yFlow");
+      trendChart.options.scales.yPress.display = activeAxes.includes("yPress");
+      trendChart.options.scales.yPct.display = activeAxes.includes("yPct");
+      trendChart.options.scales.yTot.display = activeAxes.includes("yTot");
+    }
+
+    renderChips(prof);
+    if (lastHistoryRecords && lastHistoryRecords.length > 0) {
+      renderTrendData();
+    }
+  }
+
+  function renderChips(prof) {
+    const listEl = document.getElementById("trend-chips-list");
+    if (!listEl) return;
+    listEl.innerHTML = "";
+
+    prof.channels.forEach((ch, idx) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "trend-chip" + (ch.defaultOn ? "" : " inactive");
+      chip.dataset.idx = idx;
+      chip.dataset.key = ch.key;
+
+      const dot = document.createElement("span");
+      dot.className = "trend-chip-dot";
+      dot.style.background = ch.color;
+
+      const txt = document.createElement("span");
+      txt.textContent = ch.label;
+
+      const val = document.createElement("span");
+      val.className = "trend-chip-val";
+      val.id = `chip-val-${ch.key}`;
+      val.textContent = "--";
+
+      chip.appendChild(dot);
+      chip.appendChild(txt);
+      chip.appendChild(val);
+
+      chip.addEventListener("click", () => {
+        if (!trendChart) return;
+        const isVisible = trendChart.isDatasetVisible(idx);
+        trendChart.setDatasetVisibility(idx, !isVisible);
+        chip.classList.toggle("inactive", isVisible);
+        trendChart.update("none");
+        updateTrendStats(lastHistoryRecords);
+      });
+
+      listEl.appendChild(chip);
+    });
+  }
+
+  function renderTrendData() {
+    if (!trendChart || !lastHistoryRecords || lastHistoryRecords.length === 0) return;
+    const prof = TREND_PROFILES[activeProfile] || TREND_PROFILES.overview;
+
+    const labels = [];
+    const channelData = prof.channels.map(() => []);
+
+    lastHistoryRecords.forEach(pt => {
+      const t = parseTimestamp(pt.timestamp);
+      labels.push(t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+
+      prof.channels.forEach((ch, idx) => {
+        let val = pt[ch.key];
+        if ((val === undefined || val === null) && ch.altKey) {
+          val = pt[ch.altKey];
+        }
+        channelData[idx].push(val !== undefined && val !== null ? Number(val) : null);
+      });
+    });
+
+    trendChart.data.labels = labels;
+    prof.channels.forEach((ch, idx) => {
+      if (trendChart.data.datasets[idx]) {
+        trendChart.data.datasets[idx].data = channelData[idx];
+      }
+    });
+
+    trendChart.update("none");
+
+    // Update live value tags on the chips
+    const latestPt = lastHistoryRecords[lastHistoryRecords.length - 1];
+    if (latestPt) {
+      prof.channels.forEach(ch => {
+        const valEl = document.getElementById(`chip-val-${ch.key}`);
+        if (valEl) {
+          let val = latestPt[ch.key];
+          if ((val === undefined || val === null) && ch.altKey) val = latestPt[ch.altKey];
+          valEl.textContent = fmtNum(val, 1) + " " + ch.unit;
+        }
+      });
+    }
+
+    updateTrendStats(lastHistoryRecords);
+  }
+
+  function updateTrendStats(records) {
+    if (!records || records.length === 0) return;
+    const prof = TREND_PROFILES[activeProfile] || TREND_PROFILES.overview;
+
+    const statPrimary = document.getElementById("trend-stat-primary");
+    const statCurrent = document.getElementById("trend-stat-current");
+    const statMin = document.getElementById("trend-stat-min");
+    const statMax = document.getElementById("trend-stat-max");
+    const statAvg = document.getElementById("trend-stat-avg");
+    const statSamples = document.getElementById("trend-stat-samples");
+
+    if (statPrimary) statPrimary.textContent = prof.primaryLabel;
+    if (statSamples) statSamples.textContent = records.length + " pts";
+
+    const primaryKey = prof.primaryKey;
+    const nums = [];
+    records.forEach(r => {
+      let v = r[primaryKey];
+      if (v === undefined || v === null) {
+        const ch = prof.channels.find(c => c.key === primaryKey);
+        if (ch && ch.altKey) v = r[ch.altKey];
+      }
+      if (v !== undefined && v !== null && !isNaN(Number(v))) {
+        nums.push(Number(v));
+      }
+    });
+
+    if (nums.length > 0) {
+      const cur = nums[nums.length - 1];
+      const min = Math.min(...nums);
+      const max = Math.max(...nums);
+      const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+
+      if (statCurrent) statCurrent.textContent = fmtNum(cur, 2) + " " + prof.primaryUnit;
+      if (statMin) statMin.textContent = fmtNum(min, 2) + " " + prof.primaryUnit;
+      if (statMax) statMax.textContent = fmtNum(max, 2) + " " + prof.primaryUnit;
+      if (statAvg) statAvg.textContent = fmtNum(avg, 2) + " " + prof.primaryUnit;
+    }
   }
 
   // Poll real-time current telemetry
@@ -372,27 +617,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const json = await res.json();
       if (json.status !== "ok" || !json.data) return;
 
-      const labels = [];
-      const dataTt05 = [];
-      const dataTt01 = [];
-      const dataTt08 = [];
-      const dataFlow = [];
-
-      json.data.forEach(pt => {
-        const t = new Date(pt.timestamp);
-        labels.push(t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-        dataTt05.push(pt.temp_holding_out1_tt05 !== undefined && pt.temp_holding_out1_tt05 !== null ? pt.temp_holding_out1_tt05 : pt.holding_out_temp);
-        dataTt01.push(pt.temp_product_in_tt01 !== undefined && pt.temp_product_in_tt01 !== null ? pt.temp_product_in_tt01 : pt.holding_in_temp);
-        dataTt08.push(pt.temp_chilling_tt08);
-        dataFlow.push(pt.feed_flow !== undefined && pt.feed_flow !== null ? pt.feed_flow : pt.milk_flow);
-      });
-
-      trendChart.data.labels = labels;
-      trendChart.data.datasets[0].data = dataTt05;
-      trendChart.data.datasets[1].data = dataTt01;
-      trendChart.data.datasets[2].data = dataTt08;
-      trendChart.data.datasets[3].data = dataFlow;
-      trendChart.update("none");
+      lastHistoryRecords = json.data;
+      renderTrendData();
     } catch (err) {
       console.warn("Poll history error:", err);
     }
@@ -472,6 +698,39 @@ document.addEventListener("DOMContentLoaded", () => {
       pollHistory();
     });
   });
+
+  // Profile tabs for Trend
+  const profileBtns = document.querySelectorAll(".btn-trend-profile");
+  profileBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      profileBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const profile = btn.dataset.profile;
+      setupProfile(profile);
+    });
+  });
+
+  // Quick Action Buttons (Show All / Reset)
+  const btnShowAll = document.getElementById("btn-trend-show-all");
+  if (btnShowAll) {
+    btnShowAll.addEventListener("click", () => {
+      if (!trendChart) return;
+      const chips = document.querySelectorAll(".trend-chip");
+      chips.forEach((c, idx) => {
+        c.classList.remove("inactive");
+        trendChart.setDatasetVisibility(idx, true);
+      });
+      trendChart.update("none");
+      updateTrendStats(lastHistoryRecords);
+    });
+  }
+
+  const btnReset = document.getElementById("btn-trend-reset");
+  if (btnReset) {
+    btnReset.addEventListener("click", () => {
+      setupProfile(activeProfile);
+    });
+  }
 
   // Start initialization
   initChart();

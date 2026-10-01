@@ -731,8 +731,23 @@ html, body.no-scroll-body, body.scada-body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   flex-shrink: 0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.chart-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chart-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .chart-title {
@@ -745,6 +760,40 @@ html, body.no-scroll-body, body.scada-body {
 .chart-subtitle {
   font-size: 0.7rem;
   color: var(--text-muted);
+}
+
+/* Domain Profile Tabs */
+.trend-profile-tabs {
+  display: flex;
+  gap: 2px;
+  background: rgba(226, 232, 240, 0.6);
+  padding: 3px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.btn-trend-profile {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+}
+
+.btn-trend-profile:hover {
+  color: var(--anik-navy);
+}
+
+.btn-trend-profile.active {
+  background: #ffffff;
+  color: var(--anik-navy);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 800;
 }
 
 .chart-controls {
@@ -761,7 +810,7 @@ html, body.no-scroll-body, body.scada-body {
   color: #475569;
   border: none;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
@@ -778,11 +827,138 @@ html, body.no-scroll-body, body.scada-body {
   box-shadow: none;
 }
 
+/* Channel Chips Matrix Toolbar */
+.trend-chips-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--anik-cream);
+  border: 1px solid var(--anik-cream-border);
+  border-radius: 5px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.trend-chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  flex: 1;
+}
+
+.trend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: #ffffff;
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.trend-chip:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.trend-chip.inactive {
+  opacity: 0.45;
+  background: rgba(241, 245, 249, 0.7);
+  border-style: dashed;
+  text-decoration: line-through;
+}
+
+.trend-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.trend-chip-val {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--anik-navy);
+  background: rgba(226, 232, 240, 0.6);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.trend-chips-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.btn-chip-action {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+}
+
+.btn-chip-action:hover {
+  background: #ffffff;
+  color: var(--anik-navy);
+  border-color: var(--anik-navy);
+}
+
 .chart-canvas-wrapper {
   flex: 1;
-  min-height: 0;
+  min-height: 400px;
+  height: 420px;
   position: relative;
   width: 100%;
+}
+
+/* Trend Statistics Summary Strip */
+.trend-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--glass-border);
+  flex-shrink: 0;
+}
+
+.trend-stat-item {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--glass-border);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.trend-stat-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.trend-stat-value {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--anik-navy);
 }
 
 /* ==========================================================================

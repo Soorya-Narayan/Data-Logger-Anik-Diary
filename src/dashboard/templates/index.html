@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=anik_brand_v3">
+  <link rel="stylesheet" href="/static/css/style.css?v=anik_trend_v1">
   <!-- Chart.js for live trends -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -605,22 +605,78 @@
         <div class="group-header">
           <span class="group-tag-badge">SEC 06</span>
           <h2 class="group-title">REAL-TIME TELEMETRIC TREND ANALYSIS</h2>
-          <span class="group-count">DUAL-AXIS SCADA</span>
+          <span class="group-count" id="trend-active-profile-count">30 INSTRUMENTS AVAILABLE</span>
         </div>
         <div class="card chart-panel">
+          <!-- 1. Trend Toolbar: Title, Profile Domain Tabs, Time Range -->
           <div class="chart-header">
-            <div>
-              <h3 class="chart-title">Process Trend Profile (Thermal & Mass Flow)</h3>
-              <div class="chart-subtitle">Real-time dual-axis telemetric trend curves (TT01, TT05, TT08, FIT-101)</div>
+            <div class="chart-header-left">
+              <h3 class="chart-title" id="trend-section-title">Master Process Telemetry Overview</h3>
+              <div class="chart-subtitle" id="trend-section-subtitle">Real-time multi-axis curves for critical pasteurization instruments</div>
             </div>
-            <div class="chart-controls">
-              <button class="btn-range active" data-mins="15">15 MIN</button>
-              <button class="btn-range" data-mins="30">30 MIN</button>
-              <button class="btn-range" data-mins="60">1 HOUR</button>
+
+            <div class="chart-header-right">
+              <!-- Domain Tabs -->
+              <div class="trend-profile-tabs" id="trend-profile-tabs">
+                <button type="button" class="btn-trend-profile active" data-profile="overview">OVERVIEW</button>
+                <button type="button" class="btn-trend-profile" data-profile="temperatures">THERMAL (TT)</button>
+                <button type="button" class="btn-trend-profile" data-profile="pressures">HYDRAULIC (PT)</button>
+                <button type="button" class="btn-trend-profile" data-profile="flow">FLOW & MASS</button>
+                <button type="button" class="btn-trend-profile" data-profile="controls">CONTROL & SP</button>
+              </div>
+
+              <!-- Time Range Selector -->
+              <div class="chart-controls">
+                <button class="btn-range active" data-mins="15">15M</button>
+                <button class="btn-range" data-mins="30">30M</button>
+                <button class="btn-range" data-mins="60">1H</button>
+                <button class="btn-range" data-mins="240">4H</button>
+              </div>
             </div>
           </div>
+
+          <!-- 2. Interactive Channel Legend & Chip Matrix -->
+          <div class="trend-chips-toolbar">
+            <div class="trend-chips-list" id="trend-chips-list">
+              <!-- Dynamically populated chips with live values -->
+            </div>
+            <div class="trend-chips-actions">
+              <button type="button" id="btn-trend-show-all" class="btn-chip-action" title="Show all channels in current group">ALL ON</button>
+              <button type="button" id="btn-trend-reset" class="btn-chip-action" title="Reset to default channels">RESET</button>
+            </div>
+          </div>
+
+          <!-- 3. Main Chart Canvas -->
           <div class="chart-canvas-wrapper">
             <canvas id="trendChart"></canvas>
+          </div>
+
+          <!-- 4. Trend KPI Statistical Summary Strip -->
+          <div class="trend-stats-strip" id="trend-stats-strip">
+            <div class="trend-stat-item">
+              <span class="trend-stat-label">PRIMARY METRIC</span>
+              <span class="trend-stat-value font-mono" id="trend-stat-primary">TT05 Holding</span>
+            </div>
+            <div class="trend-stat-item">
+              <span class="trend-stat-label">CURRENT</span>
+              <span class="trend-stat-value font-mono" id="trend-stat-current">--</span>
+            </div>
+            <div class="trend-stat-item">
+              <span class="trend-stat-label">WINDOW MIN</span>
+              <span class="trend-stat-value font-mono" id="trend-stat-min">--</span>
+            </div>
+            <div class="trend-stat-item">
+              <span class="trend-stat-label">WINDOW MAX</span>
+              <span class="trend-stat-value font-mono" id="trend-stat-max">--</span>
+            </div>
+            <div class="trend-stat-item">
+              <span class="trend-stat-label">WINDOW AVG</span>
+              <span class="trend-stat-value font-mono" id="trend-stat-avg">--</span>
+            </div>
+            <div class="trend-stat-item">
+              <span class="trend-stat-label">TOTAL BUFFERED</span>
+              <span class="trend-stat-value font-mono" id="trend-stat-samples">--</span>
+            </div>
           </div>
         </div>
       </section>
@@ -641,6 +697,6 @@
   <script>
     window.POLL_INTERVAL_MS = {{ poll_interval }};
   </script>
-  <script src="/static/js/dashboard.js?v=anik_brand_v6"></script>
+  <script src="/static/js/dashboard.js?v=anik_trend_v1"></script>
 </body>
 </html>
