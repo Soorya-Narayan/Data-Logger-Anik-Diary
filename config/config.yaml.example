@@ -58,7 +58,7 @@ dashboard:
   trend_window_minutes: 30
 
   # Browser auto-poll interval (milliseconds)
-  client_poll_interval_ms: 1000
+  client_poll_interval_ms: 3000
 
 reporting:
   output_dir: "reports"

@@ -238,8 +238,8 @@ document.addEventListener("DOMContentLoaded", () => {
         // 1. Process State Banner
         statusText.textContent = d.status || "STANDBY";
         valProduct.textContent = d.product || "--";
-        const sampleTime = new Date(d.timestamp);
-        lastUpdateText.textContent = "Last sample: " + sampleTime.toLocaleTimeString() + " (1s Interval)";
+        const refreshSec = Math.round((window.POLL_INTERVAL_MS || 3000) / 1000);
+        lastUpdateText.textContent = "Last sample: " + sampleTime.toLocaleTimeString() + " (" + refreshSec + "s Refresh)";
 
         // 2. Master Alarm / Failures Pill
         const failures = d.failures || "NORMAL";
@@ -467,7 +467,8 @@ document.addEventListener("DOMContentLoaded", () => {
   pollHistory();
   pollSystem();
 
-  setInterval(pollCurrent, 1000);
+  const pollIntervalMs = window.POLL_INTERVAL_MS || 3000;
+  setInterval(pollCurrent, pollIntervalMs);
   setInterval(pollHistory, 5000);
   setInterval(pollSystem, 10000);
 });

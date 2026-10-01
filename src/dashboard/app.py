@@ -66,7 +66,7 @@ def index():
     plant_info = config.get("plant", {})
     plc_mode = config.get("plc", {}).get("mode", "mock").upper()
     plc_ip = config.get("plc", {}).get("ip", "192.168.1.50")
-    poll_interval = config.get("dashboard", {}).get("client_poll_interval_ms", 1000)
+    poll_interval = config.get("dashboard", {}).get("client_poll_interval_ms", 3000)
 
     return render_template(
         "index.html",
