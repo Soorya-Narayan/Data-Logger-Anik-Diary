@@ -20,21 +20,29 @@ document.addEventListener("DOMContentLoaded", () => {
   // Executive KPI Quick Bar
   const valFeedFlow = document.getElementById("val-feed-flow");
   const valProductTot = document.getElementById("val-product-tot");
-  const valTt04 = document.getElementById("val-tt04");
-  const valTt05 = document.getElementById("val-tt05");
-  const valTt08 = document.getElementById("val-tt08");
+  const valTt05 = document.getElementById("val-tt05");       // Holding In TT05
+  const valTt06 = document.getElementById("val-tt06");       // Holding Out 1 TT06
+  const valTt16 = document.getElementById("val-tt16");       // Chiller Out TT16
   const valDeltaT = document.getElementById("val-delta-t");
   const valSpHeatingBadge = document.getElementById("val-sp-heating-badge");
 
-  // Thermal Profile (TT01 – TT09 & Delta T)
+  // Thermal Profile Matrix (TT01 – TT16 & Delta T)
   const valTt01 = document.getElementById("val-tt01");
+  const valTt02 = document.getElementById("val-tt02");
   const valTt03 = document.getElementById("val-tt03");
-  const valTt04Full = document.getElementById("val-tt04-full");
+  const valTt04Sec = document.getElementById("val-tt04-sec");
   const valTt05Full = document.getElementById("val-tt05-full");
-  const valTt06 = document.getElementById("val-tt06");
-  const valTt07 = document.getElementById("val-tt07");
+  const valTt06Full = document.getElementById("val-tt06-full");
+  const valTt07Sec = document.getElementById("val-tt07-sec");
   const valTt08Full = document.getElementById("val-tt08-full");
-  const valTt09 = document.getElementById("val-tt09");
+  const valTt09Sec = document.getElementById("val-tt09-sec");
+  const valTt10 = document.getElementById("val-tt10");
+  const valTt11 = document.getElementById("val-tt11");
+  const valTt12 = document.getElementById("val-tt12");
+  const valTt13 = document.getElementById("val-tt13");
+  const valTt14 = document.getElementById("val-tt14");
+  const valTt15 = document.getElementById("val-tt15");
+  const valTt16Full = document.getElementById("val-tt16-full");
   const valDeltaTFull = document.getElementById("val-delta-t-full");
 
   // Hydraulic Profile (PT01 – PT06)
@@ -149,14 +157,14 @@ document.addEventListener("DOMContentLoaded", () => {
     overview: {
       title: "Master Process Telemetry Overview",
       subtitle: "Multi-axis real-time curves for critical pasteurization instruments",
-      primaryKey: "temp_holding_out1_tt05",
-      primaryLabel: "TT05 Holding",
+      primaryKey: "temp_tt06",
+      primaryLabel: "TT06 Holding Out",
       primaryUnit: "°C",
       axes: ["yTemp", "yFlow", "yPress", "yPct"],
       channels: [
-        { key: "temp_holding_out1_tt05", altKey: "holding_out_temp", label: "Holding TT05", tag: "TT-05", unit: "°C", color: "#D7262D", axis: "yTemp", width: 2.5, defaultOn: true },
-        { key: "temp_product_in_tt01", altKey: "holding_in_temp", label: "Infeed TT01", tag: "TT-01", unit: "°C", color: "#C28E3A", axis: "yTemp", width: 1.8, defaultOn: true },
-        { key: "temp_chilling_tt08", label: "Chilling TT08", tag: "TT-08", unit: "°C", color: "#0284C7", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "temp_tt06", altKey: "temp_holding_out1_tt05", label: "Holding TT06", tag: "TT-06", unit: "°C", color: "#D7262D", axis: "yTemp", width: 2.5, defaultOn: true },
+        { key: "temp_tt01", altKey: "temp_product_in_tt01", label: "Infeed TT01", tag: "TT-01", unit: "°C", color: "#C28E3A", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "temp_tt16", altKey: "temp_chilling_tt08", label: "Chiller TT16", tag: "TT-16", unit: "°C", color: "#0284C7", axis: "yTemp", width: 1.8, defaultOn: true },
         { key: "feed_flow", altKey: "milk_flow", label: "Feed Flow FIT-101", tag: "FIT-101", unit: "L/H", color: "#006837", axis: "yFlow", width: 1.8, fill: true, defaultOn: true },
         { key: "press_raw_milk_pt01", label: "Raw Milk PT01", tag: "PT-01", unit: "Bar", color: "#3B82F6", axis: "yPress", width: 1.6, defaultOn: false },
         { key: "press_regen_r2_pt02", label: "Regen R2 PT02", tag: "PT-02", unit: "Bar", color: "#8B5CF6", axis: "yPress", width: 1.6, defaultOn: false },
@@ -165,21 +173,27 @@ document.addEventListener("DOMContentLoaded", () => {
       ]
     },
     temperatures: {
-      title: "Complete Thermal Profile (TT01 – TT09 & Delta-T)",
-      subtitle: "All 9 temperature transmitters and legal pasteurization holding verification",
-      primaryKey: "temp_holding_out1_tt05",
-      primaryLabel: "TT05 Holding",
+      title: "Complete Thermal Profile (TT01 – TT16 & Delta-T)",
+      subtitle: "Full 16-channel temperature transmitter matrix and legal pasteurization verification",
+      primaryKey: "temp_tt06",
+      primaryLabel: "TT06 Holding Out",
       primaryUnit: "°C",
       axes: ["yTemp"],
       channels: [
-        { key: "temp_holding_out1_tt05", altKey: "holding_out_temp", label: "Holding 1 TT05", tag: "TT-05", unit: "°C", color: "#D7262D", axis: "yTemp", width: 2.5, defaultOn: true },
-        { key: "temp_holding_out2_tt06", label: "Holding 2 TT06", tag: "TT-06", unit: "°C", color: "#9333EA", axis: "yTemp", width: 1.8, defaultOn: true },
-        { key: "temp_holding_in_tt04", label: "Holding In TT04", tag: "TT-04", unit: "°C", color: "#F97316", axis: "yTemp", width: 1.8, defaultOn: true },
-        { key: "temp_product_in_tt01", altKey: "holding_in_temp", label: "Product In TT01", tag: "TT-01", unit: "°C", color: "#C28E3A", axis: "yTemp", width: 1.8, defaultOn: true },
-        { key: "temp_regen_r2_tt03", label: "Regen R2 TT03", tag: "TT-03", unit: "°C", color: "#EAB308", axis: "yTemp", width: 1.6, defaultOn: true },
-        { key: "temp_chilling_tt08", label: "Chilling TT08", tag: "TT-08", unit: "°C", color: "#0284C7", axis: "yTemp", width: 1.8, defaultOn: true },
-        { key: "temp_chilled_milk_tt07", label: "Chilled Milk TT07", tag: "TT-07", unit: "°C", color: "#06B6D4", axis: "yTemp", width: 1.6, defaultOn: true },
-        { key: "temp_hot_water_tt09", label: "Hot Water TT09", tag: "TT-09", unit: "°C", color: "#EF4444", axis: "yTemp", width: 1.6, defaultOn: false },
+        { key: "temp_tt06", altKey: "temp_holding_out1_tt05", label: "Holding 1 TT06 [Critical]", tag: "TT-06", unit: "°C", color: "#D7262D", axis: "yTemp", width: 2.5, defaultOn: true },
+        { key: "temp_tt05", altKey: "temp_holding_in_tt04", label: "Holding In TT05", tag: "TT-05", unit: "°C", color: "#F97316", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "temp_tt08", altKey: "temp_holding_out2_tt06", label: "Holding 2 TT08", tag: "TT-08", unit: "°C", color: "#9333EA", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "temp_tt01", altKey: "temp_product_in_tt01", label: "Product In TT01", tag: "TT-01", unit: "°C", color: "#C28E3A", axis: "yTemp", width: 1.8, defaultOn: true },
+        { key: "temp_tt11", label: "Regen 1 Out TT11", tag: "TT-11", unit: "°C", color: "#0D9488", axis: "yTemp", width: 1.6, defaultOn: true },
+        { key: "temp_tt12", label: "Product Out TT12", tag: "TT-12", unit: "°C", color: "#2563EB", axis: "yTemp", width: 1.6, defaultOn: true },
+        { key: "temp_tt15", label: "Chiller In TT15", tag: "TT-15", unit: "°C", color: "#0284C7", axis: "yTemp", width: 1.6, defaultOn: true },
+        { key: "temp_tt16", altKey: "temp_chilling_tt08", label: "Chiller Out TT16", tag: "TT-16", unit: "°C", color: "#06B6D4", axis: "yTemp", width: 1.6, defaultOn: true },
+        { key: "temp_tt02", label: "Regen 1 In TT02", tag: "TT-02", unit: "°C", color: "#65A30D", axis: "yTemp", width: 1.4, defaultOn: false },
+        { key: "temp_tt03", altKey: "temp_regen_r2_tt03", label: "Regen 2 In TT03", tag: "TT-03", unit: "°C", color: "#EAB308", axis: "yTemp", width: 1.4, defaultOn: false },
+        { key: "temp_tt04", label: "TBC TT04", tag: "TT-04", unit: "°C", color: "#64748B", axis: "yTemp", width: 1.2, defaultOn: false },
+        { key: "temp_tt07", label: "TBC TT07", tag: "TT-07", unit: "°C", color: "#78716C", axis: "yTemp", width: 1.2, defaultOn: false },
+        { key: "temp_tt09", label: "TBC TT09", tag: "TT-09", unit: "°C", color: "#71717A", axis: "yTemp", width: 1.2, defaultOn: false },
+        { key: "temp_tt10", label: "TBC TT10", tag: "TT-10", unit: "°C", color: "#737373", axis: "yTemp", width: 1.2, defaultOn: false },
         { key: "delta_t", label: "Delta-T Differential", tag: "DIFF", unit: "°C", color: "#6366F1", axis: "yTemp", width: 1.8, defaultOn: true },
         { key: "sp_heating_temp", label: "Heating SP (85°C)", tag: "SP-01", unit: "°C", color: "rgba(215, 38, 45, 0.5)", axis: "yTemp", width: 1.5, dash: [4, 4], defaultOn: true }
       ]
@@ -512,23 +526,38 @@ document.addEventListener("DOMContentLoaded", () => {
         const flowVal = d.feed_flow !== undefined && d.feed_flow !== null ? d.feed_flow : d.milk_flow;
         valFeedFlow.textContent = fmtNum(flowVal, 1);
         valProductTot.textContent = fmtNum(d.product_tot, 1);
-        valTt04.textContent = fmtNum(d.temp_holding_in_tt04, 2);
-        valTt05.textContent = fmtNum(d.temp_holding_out1_tt05 !== undefined ? d.temp_holding_out1_tt05 : d.holding_out_temp, 2);
-        valTt08.textContent = fmtNum(d.temp_chilling_tt08, 2);
+        // TT05 is Holding Inlet
+        const tt05Val = d.temp_tt05 !== undefined ? d.temp_tt05 : (d.holding_in_temp !== undefined ? d.holding_in_temp : d.temp_holding_in_tt04);
+        valTt05.textContent = fmtNum(tt05Val, 2);
+        // TT06 is Holding Outlet 1 (Legal Pasteurization Point)
+        const tt06Val = d.temp_tt06 !== undefined ? d.temp_tt06 : (d.holding_out_temp !== undefined ? d.holding_out_temp : d.temp_holding_out1_tt05);
+        valTt06.textContent = fmtNum(tt06Val, 2);
+        // TT16 is Chiller Outlet
+        const tt16Val = d.temp_tt16 !== undefined ? d.temp_tt16 : d.temp_chilling_tt08;
+        valTt16.textContent = fmtNum(tt16Val, 2);
         valDeltaT.textContent = fmtNum(d.delta_t, 2);
         if (valSpHeatingBadge && d.sp_heating_temp) {
           valSpHeatingBadge.textContent = fmtNum(d.sp_heating_temp, 1) + "°C";
         }
 
-        // 4. Thermal Profile (TT01 – TT09 & Delta T)
-        valTt01.textContent = fmtNum(d.temp_product_in_tt01 !== undefined ? d.temp_product_in_tt01 : d.holding_in_temp, 2);
-        valTt03.textContent = fmtNum(d.temp_regen_r2_tt03, 2);
-        valTt04Full.textContent = fmtNum(d.temp_holding_in_tt04, 2);
-        valTt05Full.textContent = fmtNum(d.temp_holding_out1_tt05 !== undefined ? d.temp_holding_out1_tt05 : d.holding_out_temp, 2);
-        valTt06.textContent = fmtNum(d.temp_holding_out2_tt06, 2);
-        valTt07.textContent = fmtNum(d.temp_chilled_milk_tt07, 2);
-        valTt08Full.textContent = fmtNum(d.temp_chilling_tt08, 2);
-        valTt09.textContent = fmtNum(d.temp_hot_water_tt09, 2);
+        // 4. Thermal Profile (TT01 – TT16 & Delta T)
+        valTt01.textContent = fmtNum(d.temp_tt01 !== undefined ? d.temp_tt01 : d.temp_product_in_tt01, 2);
+        valTt02.textContent = fmtNum(d.temp_tt02, 2);
+        valTt03.textContent = fmtNum(d.temp_tt03 !== undefined ? d.temp_tt03 : d.temp_regen_r2_tt03, 2);
+        valTt04Sec.textContent = fmtNum(d.temp_tt04, 2);
+        valTt05Full.textContent = fmtNum(tt05Val, 2);
+        valTt06Full.textContent = fmtNum(tt06Val, 2);
+        valTt07Sec.textContent = fmtNum(d.temp_tt07, 2);
+        valTt08Full.textContent = fmtNum(d.temp_tt08 !== undefined ? d.temp_tt08 : d.temp_holding_out2_tt06, 2);
+        valTt09Sec.textContent = fmtNum(d.temp_tt09, 2);
+        valTt10.textContent = fmtNum(d.temp_tt10, 2);
+        valTt11.textContent = fmtNum(d.temp_tt11, 2);
+        valTt12.textContent = fmtNum(d.temp_tt12, 2);
+        // TT13 & TT14 are Not Connected
+        valTt13.textContent = "NC";
+        valTt14.textContent = "NC";
+        valTt15.textContent = fmtNum(d.temp_tt15, 2);
+        valTt16Full.textContent = fmtNum(tt16Val, 2);
         valDeltaTFull.textContent = fmtNum(d.delta_t, 2);
 
         // 5. Hydraulics & Pressures (PT01 – PT06)

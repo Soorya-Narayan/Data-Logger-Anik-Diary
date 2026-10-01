@@ -30,18 +30,26 @@ ALL_COLUMNS = [
     ("Process State",               "product",                      None),
     ("Status",                      "status",                       None),
 
-    # Section 1 – Temperatures
-    ("TT-01 Product In (°C)",       "temp_product_in_tt01",         "0.00"),
-    ("TT-03 Regen R2 (°C)",         "temp_regen_r2_tt03",           "0.00"),
-    ("TT-04 Holding In (°C)",       "temp_holding_in_tt04",         "0.00"),
-    ("TT-05 Holding Out1 (°C)",     "temp_holding_out1_tt05",       "0.00"),
-    ("TT-06 Holding Out2 (°C)",     "temp_holding_out2_tt06",       "0.00"),
-    ("TT-07 Chilled Milk (°C)",     "temp_chilled_milk_tt07",       "0.00"),
-    ("TT-08 Chilling (°C)",         "temp_chilling_tt08",           "0.00"),
-    ("TT-09 Hot Water (°C)",        "temp_hot_water_tt09",          "0.00"),
+    # Section 1 – Thermal Profile & Temperature Transmitters (TT01 – TT16)
+    ("TT-01 Product In (°C)",       "temp_tt01",                    "0.00"),
+    ("TT-02 Regen 1 In (°C)",       "temp_tt02",                    "0.00"),
+    ("TT-03 Regen 2 In (°C)",       "temp_tt03",                    "0.00"),
+    ("TT-04 TBC (°C)",              "temp_tt04",                    "0.00"),
+    ("TT-05 Holding In (°C)",       "temp_tt05",                    "0.00"),
+    ("TT-06 Holding Out1 (°C)",     "temp_tt06",                    "0.00"),
+    ("TT-07 TBC (°C)",              "temp_tt07",                    "0.00"),
+    ("TT-08 Holding Out2 (°C)",     "temp_tt08",                    "0.00"),
+    ("TT-09 TBC (°C)",              "temp_tt09",                    "0.00"),
+    ("TT-10 TBC (°C)",              "temp_tt10",                    "0.00"),
+    ("TT-11 Regen 1 Out (°C)",      "temp_tt11",                    "0.00"),
+    ("TT-12 Product Out (°C)",      "temp_tt12",                    "0.00"),
+    ("TT-13 Not Connected",         "temp_tt13",                    "0.00"),
+    ("TT-14 Not Connected",         "temp_tt14",                    "0.00"),
+    ("TT-15 Chiller In (°C)",       "temp_tt15",                    "0.00"),
+    ("TT-16 Chiller Out (°C)",      "temp_tt16",                    "0.00"),
     ("Delta T (°C)",                "delta_t",                      "0.00"),
 
-    # Legacy temp aliases (fallback)
+    # Legacy temp aliases (fallback compatibility)
     ("Hold In Legacy (°C)",         "holding_in_temp",              "0.00"),
     ("Hold Out Legacy (°C)",        "holding_out_temp",             "0.00"),
 
@@ -242,8 +250,8 @@ class ExcelReportGenerator:
             fdv1 = r.get("hot_fdv_open") or r.get("fdv1_status") or 0
             fdv2 = r.get("chill_fdv_open") or r.get("fdv2_status") or 0
             cip = r.get("cip_status") or 0
-            t_in = r.get("temp_holding_in_tt04") or r.get("holding_in_temp")
-            t_out = r.get("temp_holding_out1_tt05") or r.get("holding_out_temp")
+            t_in = r.get("temp_tt05") or r.get("temp_holding_in_tt04") or r.get("holding_in_temp")
+            t_out = r.get("temp_tt06") or r.get("temp_holding_out1_tt05") or r.get("holding_out_temp")
             pt03 = r.get("press_holding_in_pt03")
             scv = r.get("steam_cv")
             alarm = r.get("alarm_main") or 0
@@ -333,8 +341,8 @@ class ExcelReportGenerator:
         rows = [
             ("Total Milk Processed",         f"{kpis.get('total_milk_kl', 0.0)} KL  ({kpis.get('total_milk_liters', 0):,} Liters)", False),
             ("Active Production Time",        f"{kpis.get('production_time_min', 0.0)} min", False),
-            ("Avg Holding Outlet Temp TT05",  f"{kpis.get('avg_holding_out_c', 0.0)} °C", False),
-            ("Avg Holding Inlet Temp TT04",   f"{kpis.get('avg_holding_in_c', 0.0)} °C", False),
+            ("Avg Holding Outlet Temp TT06",  f"{kpis.get('avg_holding_out_c', 0.0)} °C", False),
+            ("Avg Holding Inlet Temp TT05",   f"{kpis.get('avg_holding_in_c', 0.0)} °C", False),
             ("Avg Holding Inlet Press PT03",  f"{kpis.get('avg_holding_press_bar', 0.0)} Bar", False),
             ("Avg Steam Control Valve CV",    f"{kpis.get('avg_steam_cv_pct', 0.0)} %", False),
             ("FDV Diversion Events",          f"{kpis.get('divert_count', 0)} events  ({kpis.get('divert_time_min', 0.0)} min total)", False),
@@ -471,12 +479,12 @@ class ExcelReportGenerator:
         max_chart_rows = min(total_rows + 1, 1000)
 
         # Column indices in ws_source (1-based):
-        # TT01 = col 4, TT05 = col 8, TT08 = col 10, Feed Flow = col 21
+        # TT01 = col 4, TT06 = col 9, TT16 = col 19, Feed Flow = col 29
         for col_idx, color, label in [
             (4,  "D7262D", "TT01 Product In (°C)"),
-            (8,  "C28E3A", "TT05 Holding Out1 (°C)"),
-            (10, "0284C7", "TT08 Chilling (°C)"),
-            (21, "006837", "Feed Flow (L/H)"),
+            (9,  "C28E3A", "TT06 Holding Out1 (°C)"),
+            (19, "0284C7", "TT16 Chiller Out (°C)"),
+            (29, "006837", "Feed Flow (L/H)"),
         ]:
             data_ref = Reference(ws_source, min_col=col_idx, min_row=1, max_row=max_chart_rows)
             series = Series(data_ref, title=label)

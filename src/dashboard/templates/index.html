@@ -139,30 +139,30 @@
       </div>
 
       <div class="kpi-card glass-card">
-        <div class="kpi-label">HOLDING INLET TT04</div>
+        <div class="kpi-label">HOLDING INLET TT05</div>
         <div class="kpi-value-row">
-          <span class="kpi-val val-temp-in" id="val-tt04">--</span>
+          <span class="kpi-val val-temp-in" id="val-tt05">--</span>
           <span class="kpi-unit">°C</span>
         </div>
-        <div class="kpi-tag">TT04 // TEMP_4</div>
+        <div class="kpi-tag">TT05 // TEMP_5</div>
       </div>
 
       <div class="kpi-card glass-card">
-        <div class="kpi-label">HOLDING OUTLET TT05</div>
+        <div class="kpi-label">HOLDING OUTLET TT06</div>
         <div class="kpi-value-row">
-          <span class="kpi-val val-temp-out" id="val-tt05">--</span>
+          <span class="kpi-val val-temp-out" id="val-tt06">--</span>
           <span class="kpi-unit">°C</span>
         </div>
-        <div class="kpi-tag">TT05 // SP: <span id="val-sp-heating-badge">85°C</span></div>
+        <div class="kpi-tag">TT06 // SP: <span id="val-sp-heating-badge">85°C</span></div>
       </div>
 
       <div class="kpi-card glass-card">
-        <div class="kpi-label">CHILLING TEMP TT08</div>
+        <div class="kpi-label">CHILLER OUTLET TT16</div>
         <div class="kpi-value-row">
-          <span class="kpi-val val-temp-chill" id="val-tt08">--</span>
+          <span class="kpi-val val-temp-chill" id="val-tt16">--</span>
           <span class="kpi-unit">°C</span>
         </div>
-        <div class="kpi-tag">TT08 // TEMP_8</div>
+        <div class="kpi-tag">TT16 // TEMP_16</div>
       </div>
 
       <div class="kpi-card glass-card">
@@ -177,7 +177,7 @@
 
     <!-- 4. Category Filter Navigation Bar (No emojis, Industrial engineering format) -->
     <nav class="category-nav glass-card">
-      <button class="cat-pill active" data-filter="all">ALL INSTRUMENTS [30]</button>
+      <button class="cat-pill active" data-filter="all">ALL INSTRUMENTS [38]</button>
       <button class="cat-pill" data-filter="temps">TEMPERATURES [TT]</button>
       <button class="cat-pill" data-filter="pressures">PRESSURES [PT]</button>
       <button class="cat-pill" data-filter="control">PROCESS CONTROL [CV/LT]</button>
@@ -189,18 +189,18 @@
     <!-- 5. Main SCADA Matrix Container -->
     <main class="scada-content">
       
-      <!-- Group A: Temperatures & Thermal Profiles (8 Sensors + Delta T) -->
+      <!-- Group A: Temperatures & Thermal Profiles (16 Sensors + Delta T) -->
       <section class="section-group" id="grp-temps">
         <div class="group-header">
           <span class="group-tag-badge">SEC 01</span>
-          <h2 class="group-title">THERMAL PROFILE & TEMPERATURE TRANSMITTERS [TT01 - TT09]</h2>
-          <span class="group-count">9 CHANNELS</span>
+          <h2 class="group-title">THERMAL PROFILE & TEMPERATURE TRANSMITTERS [TT01 - TT16]</h2>
+          <span class="group-count">16 CHANNELS + DELTA-T</span>
         </div>
         <div class="matrix-grid">
           <!-- TT01 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">PRODUCT IN TEMP</span>
+              <span class="m-title">PRODUCT INLET TEMP</span>
               <span class="m-tag">TT-01</span>
             </div>
             <div class="m-body">
@@ -210,95 +210,197 @@
             <div class="m-sub">Raw Infeed Channel (TEMP_1)</div>
           </div>
 
+          <!-- TT02 -->
+          <div class="card instr-card">
+            <div class="card-head">
+              <span class="m-title">REGEN 1 INLET TEMP</span>
+              <span class="m-tag">TT-02</span>
+            </div>
+            <div class="m-body">
+              <span class="m-value" id="val-tt02">--</span>
+              <span class="m-unit">°C</span>
+            </div>
+            <div class="m-sub">Regeneration Stage 1 In (TEMP_2)</div>
+          </div>
+
           <!-- TT03 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">REGENERATION R2 TEMP</span>
+              <span class="m-title">REGEN 2 INLET TEMP</span>
               <span class="m-tag">TT-03</span>
             </div>
             <div class="m-body">
               <span class="m-value" id="val-tt03">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Regeneration Stage 2 (TEMP_3)</div>
+            <div class="m-sub">Regeneration Stage 2 In (TEMP_3)</div>
           </div>
 
           <!-- TT04 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">HOLDING INLET TEMP</span>
+              <span class="m-title">TEMPERATURE TT04</span>
               <span class="m-tag">TT-04</span>
             </div>
             <div class="m-body">
-              <span class="m-value temp-in" id="val-tt04-full">--</span>
+              <span class="m-value" id="val-tt04-sec">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Holding Tube Inlet (TEMP_4)</div>
+            <div class="m-sub">[To be confirmed] (TEMP_4)</div>
           </div>
 
           <!-- TT05 -->
-          <div class="card instr-card highlight-card">
+          <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">HOLDING OUTLET 1 TEMP</span>
-              <span class="m-tag tag-primary">TT-05 [CRITICAL]</span>
+              <span class="m-title">HOLDING INLET TEMP</span>
+              <span class="m-tag">TT-05</span>
             </div>
             <div class="m-body">
-              <span class="m-value temp-out" id="val-tt05-full">--</span>
+              <span class="m-value temp-in" id="val-tt05-full">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Legal Pasteurization Point (TEMP_5)</div>
+            <div class="m-sub">Holding Tube Inlet (TEMP_5)</div>
           </div>
 
           <!-- TT06 -->
-          <div class="card instr-card">
+          <div class="card instr-card highlight-card">
             <div class="card-head">
-              <span class="m-title">HOLDING OUTLET 2 TEMP</span>
-              <span class="m-tag">TT-06</span>
+              <span class="m-title">HOLDING OUTLET 1 TEMP</span>
+              <span class="m-tag tag-primary">TT-06 [CRITICAL]</span>
             </div>
             <div class="m-body">
-              <span class="m-value temp-out" id="val-tt06">--</span>
+              <span class="m-value temp-out" id="val-tt06-full">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Holding Tube Verification (TEMP_6)</div>
+            <div class="m-sub">Legal Pasteurization Point (TEMP_6)</div>
           </div>
 
           <!-- TT07 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">CHILLED MILK TEMP</span>
+              <span class="m-title">TEMPERATURE TT07</span>
               <span class="m-tag">TT-07</span>
             </div>
             <div class="m-body">
-              <span class="m-value temp-chill" id="val-tt07">--</span>
+              <span class="m-value" id="val-tt07-sec">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Final Pack-Ready Stream (TEMP_7)</div>
+            <div class="m-sub">[To be confirmed] (TEMP_7)</div>
           </div>
 
           <!-- TT08 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">CHILLING TEMP</span>
+              <span class="m-title">HOLDING OUTLET 2 TEMP</span>
               <span class="m-tag">TT-08</span>
             </div>
             <div class="m-body">
-              <span class="m-value temp-chill" id="val-tt08-full">--</span>
+              <span class="m-value temp-out" id="val-tt08-full">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Chilled Water / Glycol Out (TEMP_8)</div>
+            <div class="m-sub">Holding Tube Verification (TEMP_8)</div>
           </div>
 
           <!-- TT09 -->
           <div class="card instr-card">
             <div class="card-head">
-              <span class="m-title">HOT WATER TEMP</span>
+              <span class="m-title">TEMPERATURE TT09</span>
               <span class="m-tag">TT-09</span>
             </div>
             <div class="m-body">
-              <span class="m-value val-hot" id="val-tt09">--</span>
+              <span class="m-value" id="val-tt09-sec">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">PHE Heating Loop (TEMP_9)</div>
+            <div class="m-sub">[To be confirmed] (TEMP_9)</div>
+          </div>
+
+          <!-- TT10 -->
+          <div class="card instr-card">
+            <div class="card-head">
+              <span class="m-title">TEMPERATURE TT10</span>
+              <span class="m-tag">TT-10</span>
+            </div>
+            <div class="m-body">
+              <span class="m-value" id="val-tt10">--</span>
+              <span class="m-unit">°C</span>
+            </div>
+            <div class="m-sub">[To be confirmed] (TEMP_10)</div>
+          </div>
+
+          <!-- TT11 -->
+          <div class="card instr-card">
+            <div class="card-head">
+              <span class="m-title">REGEN 1 OUTLET TEMP</span>
+              <span class="m-tag">TT-11</span>
+            </div>
+            <div class="m-body">
+              <span class="m-value" id="val-tt11">--</span>
+              <span class="m-unit">°C</span>
+            </div>
+            <div class="m-sub">Regeneration Stage 1 Out (TEMP_11)</div>
+          </div>
+
+          <!-- TT12 -->
+          <div class="card instr-card">
+            <div class="card-head">
+              <span class="m-title">PRODUCT OUTLET TEMP</span>
+              <span class="m-tag">TT-12</span>
+            </div>
+            <div class="m-body">
+              <span class="m-value temp-chill" id="val-tt12">--</span>
+              <span class="m-unit">°C</span>
+            </div>
+            <div class="m-sub">Product Outlet Stream (TEMP_12)</div>
+          </div>
+
+          <!-- TT13 (Not Connected) -->
+          <div class="card instr-card card-nc">
+            <div class="card-head">
+              <span class="m-title">CHANNEL TT13</span>
+              <span class="m-tag tag-nc">TT-13 [NC]</span>
+            </div>
+            <div class="m-body">
+              <span class="m-value val-nc" id="val-tt13">NC</span>
+            </div>
+            <div class="m-sub">Not Connected // Standby (TEMP_13)</div>
+          </div>
+
+          <!-- TT14 (Not Connected) -->
+          <div class="card instr-card card-nc">
+            <div class="card-head">
+              <span class="m-title">CHANNEL TT14</span>
+              <span class="m-tag tag-nc">TT-14 [NC]</span>
+            </div>
+            <div class="m-body">
+              <span class="m-value val-nc" id="val-tt14">NC</span>
+            </div>
+            <div class="m-sub">Not Connected // Standby (TEMP_14)</div>
+          </div>
+
+          <!-- TT15 -->
+          <div class="card instr-card">
+            <div class="card-head">
+              <span class="m-title">CHILLER INLET TEMP</span>
+              <span class="m-tag">TT-15</span>
+            </div>
+            <div class="m-body">
+              <span class="m-value temp-chill" id="val-tt15">--</span>
+              <span class="m-unit">°C</span>
+            </div>
+            <div class="m-sub">Chiller Return Loop (TEMP_15)</div>
+          </div>
+
+          <!-- TT16 -->
+          <div class="card instr-card">
+            <div class="card-head">
+              <span class="m-title">CHILLER OUTLET TEMP</span>
+              <span class="m-tag">TT-16</span>
+            </div>
+            <div class="m-body">
+              <span class="m-value temp-chill" id="val-tt16-full">--</span>
+              <span class="m-unit">°C</span>
+            </div>
+            <div class="m-sub">Chilled Water Supply (TEMP_16)</div>
           </div>
 
           <!-- Delta T -->
@@ -311,7 +413,7 @@
               <span class="m-value val-delta" id="val-delta-t-full">--</span>
               <span class="m-unit">°C</span>
             </div>
-            <div class="m-sub">Thermal Differential across PHE</div>
+            <div class="m-sub">Thermal Differential (Diff T6-T1)</div>
           </div>
         </div>
       </section>

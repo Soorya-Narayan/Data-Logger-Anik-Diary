@@ -112,18 +112,38 @@ class PollerApp:
         self._last_sample_time = now
         data["product_tot"] = round(self._totalizer_liters, 1)
 
-        # 2. Backwards-compatibility aliases for legacy templates & charts
-        if "temp_product_in_tt01" in data and "holding_in_temp" not in data:
-            data["holding_in_temp"] = data.get("temp_product_in_tt01")
-        if "temp_chilling_tt08" in data and "holding_out_temp" not in data:
-            data["holding_out_temp"] = data.get("temp_chilling_tt08")
+        # 2. Complete 16-point Temperature Transmitter matrix (TT01 – TT16)
+        # Fallback mappings for backward compatibility between old and new tags
+        if "temp_product_in_tt01" in data and "temp_tt01" not in data:
+            data["temp_tt01"] = data.get("temp_product_in_tt01")
+        if "temp_tt01" in data and "temp_product_in_tt01" not in data:
+            data["temp_product_in_tt01"] = data.get("temp_tt01")
 
-        # 3. Delta T calculation
+        # TT13 and TT14 are physically not connected at the plant:
+        # Sanitize open-circuit thermocouple floating values (e.g. -323°C)
+        data["temp_tt13"] = None
+        data["temp_tt14"] = None
+
+        # Key pasteurizer process aliases:
+        # TT05 = Holding Tube Inlet Temperature
+        # TT06 = Holding Tube Outlet 1 Temperature (Legal Pasteurization Point)
+        # TT08 = Holding Tube Outlet 2 Temperature (Verification)
+        t_hold_in = data.get("temp_tt05")
+        if t_hold_in is None:
+            t_hold_in = data.get("temp_holding_in_tt04")  # Legacy fallback
+        data["holding_in_temp"] = t_hold_in
+
+        t_hold_out = data.get("temp_tt06")
+        if t_hold_out is None:
+            t_hold_out = data.get("temp_holding_out1_tt05")  # Legacy fallback
+        data["holding_out_temp"] = t_hold_out
+
+        # 3. Delta T calculation (Micro850 DIFFT6T1 = TEMP_6 - TEMP_1 = TT06 - TT01)
         raw_delta = data.get("delta_t")
-        t_out1 = data.get("temp_holding_out1_tt05") or 0.0
-        t_in = data.get("temp_product_in_tt01") or 0.0
+        t_out1 = t_hold_out if t_hold_out is not None else 0.0
+        t_in1 = data.get("temp_tt01") or 0.0
         if raw_delta is None or abs(float(raw_delta)) < 0.01:
-            data["delta_t"] = round(abs(float(t_out1) - float(t_in)), 2)
+            data["delta_t"] = round(abs(float(t_out1) - float(t_in1)), 2)
         else:
             data["delta_t"] = round(float(raw_delta), 2)
 

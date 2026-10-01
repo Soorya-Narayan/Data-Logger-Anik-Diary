@@ -47,14 +47,16 @@ PDF_SECTIONS = [
     ("State",                   "product",                  "C"),
 
     # ── TEMPERATURES ─────────────────────────────────────────────────────────
-    ("TT01\nProd In\n(°C)",     "temp_product_in_tt01",     "R"),
-    ("TT04\nHold In\n(°C)",     "temp_holding_in_tt04",     "R"),
-    ("TT05\nHold Out1\n(°C)",   "temp_holding_out1_tt05",   "R"),
-    ("TT06\nHold Out2\n(°C)",   "temp_holding_out2_tt06",   "R"),
-    ("TT07\nChill Milk\n(°C)",  "temp_chilled_milk_tt07",   "R"),
-    ("TT08\nChilling\n(°C)",    "temp_chilling_tt08",       "R"),
-    ("TT09\nHot Water\n(°C)",   "temp_hot_water_tt09",      "R"),
-    ("TT03\nRegen R2\n(°C)",    "temp_regen_r2_tt03",       "R"),
+    ("TT01\nProd In\n(°C)",     "temp_tt01",                "R"),
+    ("TT05\nHold In\n(°C)",     "temp_tt05",                "R"),
+    ("TT06\nHold Out1\n(°C)",   "temp_tt06",                "R"),
+    ("TT08\nHold Out2\n(°C)",   "temp_tt08",                "R"),
+    ("TT11\nRegen Out\n(°C)",   "temp_tt11",                "R"),
+    ("TT12\nProd Out\n(°C)",    "temp_tt12",                "R"),
+    ("TT15\nChill In\n(°C)",    "temp_tt15",                "R"),
+    ("TT16\nChill Out\n(°C)",   "temp_tt16",                "R"),
+    ("TT02\nRegen In\n(°C)",    "temp_tt02",                "R"),
+    ("TT03\nRegen2 In\n(°C)",   "temp_tt03",                "R"),
     ("ΔT\n(°C)",                "delta_t",                  "R"),
 
     # ── PRESSURES ────────────────────────────────────────────────────────────
@@ -108,6 +110,9 @@ NUM_FIELDS = {
     "temp_product_in_tt01", "temp_regen_r2_tt03", "temp_holding_in_tt04",
     "temp_holding_out1_tt05", "temp_holding_out2_tt06", "temp_chilled_milk_tt07",
     "temp_chilling_tt08", "temp_hot_water_tt09", "delta_t",
+    "temp_tt01", "temp_tt02", "temp_tt03", "temp_tt04", "temp_tt05", "temp_tt06",
+    "temp_tt07", "temp_tt08", "temp_tt09", "temp_tt10", "temp_tt11", "temp_tt12",
+    "temp_tt13", "temp_tt14", "temp_tt15", "temp_tt16",
     "press_raw_milk_pt01", "press_regen_r2_pt02", "press_holding_in_pt03",
     "press_chilled_milk_pt04", "press_hot_water_pt05", "press_chilling_pt06",
     "feed_flow", "milk_flow", "product_tot", "steam_cv", "deodoriser_level",
@@ -377,8 +382,8 @@ class PDFReportGenerator:
             kv("CIP Duration",              f"{kpis.get('cip_time_min', 0.0)} min"),
         ]
         right = [
-            kv("Avg Holding Out Temp TT05", f"{kpis.get('avg_holding_out_c', 0.0)} °C"),
-            kv("Avg Holding In Temp TT04",  f"{kpis.get('avg_holding_in_c', 0.0)} °C"),
+            kv("Avg Holding Out Temp TT06", f"{kpis.get('avg_holding_out_c', 0.0)} °C"),
+            kv("Avg Holding In Temp TT05",  f"{kpis.get('avg_holding_in_c', 0.0)} °C"),
             kv("Avg Holding Inlet Press PT03", f"{kpis.get('avg_holding_press_bar', 0.0)} Bar"),
             kv("Avg Steam CV",              f"{kpis.get('avg_steam_cv_pct', 0.0)} %"),
         ]
@@ -436,8 +441,8 @@ class PDFReportGenerator:
             fdv2  = r.get("chill_fdv_open") or r.get("fdv2_status") or 0
             cip   = r.get("cip_status") or 0
             alarm = r.get("alarm_main") or 0
-            t_in  = r.get("temp_holding_in_tt04") or r.get("holding_in_temp")
-            t_out = r.get("temp_holding_out1_tt05") or r.get("holding_out_temp")
+            t_in  = r.get("temp_tt05") or r.get("temp_holding_in_tt04") or r.get("holding_in_temp")
+            t_out = r.get("temp_tt06") or r.get("temp_holding_out1_tt05") or r.get("holding_out_temp")
             pt03  = r.get("press_holding_in_pt03")
             scv   = r.get("steam_cv")
 

@@ -280,8 +280,27 @@ class MockPLCClient(BasePLCClient):
             cip_step = "Idle"
             fdv_feedback = 0
 
+        # Simulated thermal profile across all 16 TT channels
+        tt01 = round(46.5 + random.gauss(0, 0.4), 2)  # Product In
+        tt02 = round(58.2 + random.gauss(0, 0.3), 2)  # Regen 1 In
+        tt03 = round(68.5 + random.gauss(0, 0.3), 2)  # Regen 2 In
+        tt04 = 0.0                                     # TBC
+        tt05 = round(self._holding_in_temp, 2)         # Holding In
+        tt06 = round(self._holding_out_temp, 2)        # Holding Out 1 (Legal)
+        tt07 = 0.0                                     # TBC
+        tt08 = round(self._holding_out_temp + 0.3, 2)  # Holding Out 2 (Verification)
+        tt09 = 0.0                                     # TBC
+        tt10 = 0.0                                     # TBC
+        tt11 = round(12.4 + random.gauss(0, 0.2), 2)  # Regen 1 Out
+        tt12 = round(4.2 + random.gauss(0, 0.2), 2)   # Product Out
+        tt13 = None                                    # Not Connected
+        tt14 = None                                    # Not Connected
+        tt15 = round(2.8 + random.gauss(0, 0.2), 2)   # Chiller In
+        tt16 = round(1.2 + random.gauss(0, 0.2), 2)   # Chiller Out
+
         return {
             "timestamp": now_iso,
+            "feed_flow": round(self._flow, 1),
             "milk_flow": round(self._flow, 1),
             "holding_in_temp": round(self._holding_in_temp, 2),
             "holding_out_temp": round(self._holding_out_temp, 2),
@@ -294,4 +313,42 @@ class MockPLCClient(BasePLCClient):
             "cip_status": cip_status,
             "cip_step": cip_step,
             "fdv_feedback": fdv_feedback,
+            # 16-point TT matrix
+            "temp_tt01": tt01,
+            "temp_tt02": tt02,
+            "temp_tt03": tt03,
+            "temp_tt04": tt04,
+            "temp_tt05": tt05,
+            "temp_tt06": tt06,
+            "temp_tt07": tt07,
+            "temp_tt08": tt08,
+            "temp_tt09": tt09,
+            "temp_tt10": tt10,
+            "temp_tt11": tt11,
+            "temp_tt12": tt12,
+            "temp_tt13": tt13,
+            "temp_tt14": tt14,
+            "temp_tt15": tt15,
+            "temp_tt16": tt16,
+            # Pressures
+            "press_raw_milk_pt01": -2.48,
+            "press_regen_r2_pt02": -0.55,
+            "press_holding_in_pt03": -0.47,
+            "press_chilled_milk_pt04": -0.01,
+            "press_hot_water_pt05": 0.01,
+            "press_chilling_pt06": 0.00,
+            # Control & Setpoints
+            "steam_cv": 100.0 if self._holding_out_temp < 84.0 else 42.0,
+            "deodoriser_level": 0.1,
+            "regen_efficiency": 0.0,
+            "sp_heating_temp": 85.0,
+            "sp_chill_fdv_diversion": 6.0,
+            "sp_heating_fdv_hys": 80.0,
+            "sp_chilling_pressure": 0.0,
+            "sp_regen_r1_pressure": 0.0,
+            # Alarms
+            "alarm_main": 1 if "DIVERSION" in status_str else 0,
+            "alarm_fdv1": 1 if fdv1_status == 0 else 0,
+            "trip_fdv1": 0,
+            "trip_fdv2": 0,
         }

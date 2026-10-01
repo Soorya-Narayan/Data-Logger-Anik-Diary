@@ -1536,6 +1536,33 @@ html, body.no-scroll-body, body.scada-body {
   font-weight: 800 !important;
 }
 
+/* Disconnected Sensor Cards (e.g. TT13, TT14) */
+.instr-card.card-nc {
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.75) 0%, rgba(241, 245, 249, 0.88) 100%);
+  border: 1px dashed #cbd5e1;
+  opacity: 0.82;
+}
+
+.instr-card.card-nc:hover {
+  border-color: #94a3b8;
+  transform: none;
+  box-shadow: none;
+}
+
+.tag-nc {
+  background: rgba(148, 163, 184, 0.18) !important;
+  color: #64748b !important;
+  border: 1px dashed rgba(148, 163, 184, 0.5) !important;
+  font-weight: 700 !important;
+}
+
+.m-value.val-nc {
+  color: #94a3b8 !important;
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+  font-style: italic;
+}
+
 .sp-card {
   border-left: 3.5px solid var(--anik-gold);
   background: linear-gradient(135deg, rgba(250, 246, 238, 0.8) 0%, rgba(255, 255, 255, 0.95) 100%);

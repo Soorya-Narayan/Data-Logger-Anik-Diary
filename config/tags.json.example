@@ -9,61 +9,133 @@
       "description": "Feed Flow Rate into Pasteurizer",
       "category": "flow"
     },
-    "temp_product_in_tt01": {
-      "plc_tag": "YOUR_TEMP_1_TAG",
+    "temp_tt01": {
+      "plc_tag": "TEMP_1",
       "data_type": "REAL",
       "unit": "°C",
-      "description": "Product In Temp TT01",
-      "category": "temperature"
+      "description": "Product Inlet Temperature TT01",
+      "category": "temperature",
+      "connected": true
     },
-    "temp_regen_r2_tt03": {
-      "plc_tag": "YOUR_TEMP_3_TAG",
+    "temp_tt02": {
+      "plc_tag": "TEMP_2",
       "data_type": "REAL",
       "unit": "°C",
-      "description": "Regeneration R2 Temp TT03",
-      "category": "temperature"
+      "description": "Regeneration 1 Inlet Temperature TT02",
+      "category": "temperature",
+      "connected": true
     },
-    "temp_holding_in_tt04": {
-      "plc_tag": "YOUR_TEMP_4_TAG",
+    "temp_tt03": {
+      "plc_tag": "TEMP_3",
       "data_type": "REAL",
       "unit": "°C",
-      "description": "Holding Inlet Temp TT04",
-      "category": "temperature"
+      "description": "Regeneration 2 Inlet Temperature TT03",
+      "category": "temperature",
+      "connected": true
     },
-    "temp_holding_out1_tt05": {
-      "plc_tag": "YOUR_TEMP_5_TAG",
+    "temp_tt04": {
+      "plc_tag": "TEMP_4",
       "data_type": "REAL",
       "unit": "°C",
-      "description": "Holding Outlet 1 Temp TT05 (Legal Pasteurization Point)",
-      "category": "temperature"
+      "description": "Temperature TT04 [To be confirmed]",
+      "category": "temperature",
+      "connected": true
     },
-    "temp_holding_out2_tt06": {
-      "plc_tag": "YOUR_TEMP_6_TAG",
+    "temp_tt05": {
+      "plc_tag": "TEMP_5",
       "data_type": "REAL",
       "unit": "°C",
-      "description": "Holding Outlet 2 Temp TT06",
-      "category": "temperature"
+      "description": "Holding Inlet Temperature TT05",
+      "category": "temperature",
+      "connected": true
     },
-    "temp_chilled_milk_tt07": {
-      "plc_tag": "YOUR_TEMP_7_TAG",
+    "temp_tt06": {
+      "plc_tag": "TEMP_6",
       "data_type": "REAL",
       "unit": "°C",
-      "description": "Chilled Milk Temp TT07",
-      "category": "temperature"
+      "description": "Holding Outlet Temperature 1 TT06 (Legal Pasteurization Point)",
+      "category": "temperature",
+      "connected": true
     },
-    "temp_chilling_tt08": {
-      "plc_tag": "YOUR_TEMP_8_TAG",
+    "temp_tt07": {
+      "plc_tag": "TEMP_7",
       "data_type": "REAL",
       "unit": "°C",
-      "description": "Chilling Temp TT08",
-      "category": "temperature"
+      "description": "Temperature TT07 [To be confirmed]",
+      "category": "temperature",
+      "connected": true
     },
-    "temp_hot_water_tt09": {
-      "plc_tag": "YOUR_TEMP_9_TAG",
+    "temp_tt08": {
+      "plc_tag": "TEMP_8",
       "data_type": "REAL",
       "unit": "°C",
-      "description": "Hot Water Temp TT09",
-      "category": "temperature"
+      "description": "Holding Outlet Temperature 2 TT08 (Holding Tube Verification)",
+      "category": "temperature",
+      "connected": true
+    },
+    "temp_tt09": {
+      "plc_tag": "TEMP_9",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Temperature TT09 [To be confirmed]",
+      "category": "temperature",
+      "connected": true
+    },
+    "temp_tt10": {
+      "plc_tag": "TEMP_10",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Temperature TT10 [To be confirmed]",
+      "category": "temperature",
+      "connected": true
+    },
+    "temp_tt11": {
+      "plc_tag": "TEMP_11",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Regeneration 1 Outlet Temperature TT11",
+      "category": "temperature",
+      "connected": true
+    },
+    "temp_tt12": {
+      "plc_tag": "TEMP_12",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Product Outlet Temperature TT12",
+      "category": "temperature",
+      "connected": true
+    },
+    "temp_tt13": {
+      "plc_tag": "TEMP_13",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Temperature TT13 (Not Connected)",
+      "category": "temperature",
+      "connected": false
+    },
+    "temp_tt14": {
+      "plc_tag": "TEMP_14",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Temperature TT14 (Not Connected)",
+      "category": "temperature",
+      "connected": false
+    },
+    "temp_tt15": {
+      "plc_tag": "TEMP_15",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Chiller Inlet Temperature TT15",
+      "category": "temperature",
+      "connected": true
+    },
+    "temp_tt16": {
+      "plc_tag": "TEMP_16",
+      "data_type": "REAL",
+      "unit": "°C",
+      "description": "Chiller Outlet Temperature TT16",
+      "category": "temperature",
+      "connected": true
     },
     "press_raw_milk_pt01": {
       "plc_tag": "YOUR_PRESSURE_1_TAG",

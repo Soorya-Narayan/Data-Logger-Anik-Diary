@@ -41,8 +41,8 @@ Comprehensive supervisory view displaying plant process state (`ON` / `AUTO MODE
   <img src="docs/assets/dashboard_overview.png" alt="Supervisory SCADA Dashboard Overview" width="95%" />
 </div>
 
-### 3. Thermal Profile & Temperature Transmitters (TT01 – TT09)
-Continuous legal pasteurization tracking across all 9 thermal zones, including Infeed Channel (`TT-01`), Legal Pasteurization Point (`TT-05` [CRITICAL]), Holding Verification (`TT-06`), Chilling Loop (`TT-08`), and Differential Delta-T across the PHE.
+### 3. Thermal Profile & Temperature Transmitters (TT01 – TT16)
+Continuous legal pasteurization tracking across the plant's 16 TT channels: Product Inlet (`TT-01`), Regeneration Inlets (`TT-02`, `TT-03`), Holding Tube Inlet (`TT-05`), Legal Pasteurization Point (`TT-06` [CRITICAL]), Holding Verification (`TT-08`), Regeneration Outlet (`TT-11`), Product Outlet (`TT-12`), Chiller Return/Supply (`TT-15`, `TT-16`), Standby Channels (`TT-13`, `TT-14` [NC]), and Differential Delta-T across the PHE.
 
 <div align="center">
   <img src="docs/assets/thermal_profile.png" alt="Thermal Profile TT01-TT09" width="95%" />
@@ -325,14 +325,14 @@ Open a browser on the client PC (connected to the same switch or Wi-Fi) and navi
 - **Industrial SCADA Styling**: Premium light theme matching the Anik brand palette with clear high-contrast typography, squared cards, and clean visual hierarchy.
 - **Top Brand Separator**: Official Anik Dairy and Goose logos with integrated real-time alarm annunciator and process state pills (`ON` / `AUTO MODE`).
 - **3-Second Ultra-Low Latency Streaming**: Fast live updates served straight from `/dev/shm` in-memory tmpfs ring buffer with zero disk I/O drag.
-- **30-Instrument Categorized Sections**:
-  - **SEC 01 (TT01–TT09)**: Thermal Profile & Temperature Transmitters (with Delta-T calculation).
+- **38-Instrument Categorized Sections**:
+  - **SEC 01 (TT01–TT16)**: Thermal Profile & 16 Temperature Transmitters (with Delta-T calculation; TT13 and TT14 styled as Not Connected).
   - **SEC 02 (PT01–PT06)**: Hydraulic Profile & Pressure Transmitters.
   - **SEC 03 (CV/LT)**: Process Control, Mass Flow (`FIT-101`), Totalizer (`TOT-01`), and Deodoriser Level (`LT-101`).
   - **SEC 04 (SP)**: Legal Pasteurizer and Process Temperature Setpoints.
   - **SEC 05 (FDV/Interlocks)**: Valve actuators and safety interlocks (FDV-1, FDV-2).
 - **Multi-Axis Telemetric Trend Analysis**: Interactive multi-axis time-series visualization with 4 simultaneous Y-axes: Temperature (°C), Flow Rate (L/H), Pressure (Bar), and Control/Level (%). Supports 15M, 30M, 1H, and 4H timeframes with interactive channel chips.
-- **One-Click Comprehensive Data Exports**: Instant CSV and Excel export featuring complete telemetry across all 30 instruments with shift totals and diagnostic codes.
+- **One-Click Comprehensive Data Exports**: Instant CSV, Excel, and PDF exports featuring complete telemetry across all 38 instruments with shift totals and diagnostic codes.
 - **Pi Diagnostics Strip**: Real-time CPU load, SoC temperature, RAM usage, SD card storage, and SQLite WAL buffer metrics.
 
 ---

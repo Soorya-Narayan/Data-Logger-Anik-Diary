@@ -73,6 +73,12 @@ class TestPasteurizerSystem(unittest.TestCase):
         self.assertIn("status", sample)
         self.assertIn("fdv1_status", sample)
         self.assertIn("fdv2_status", sample)
+        # Check 16 TT channels
+        self.assertIn("temp_tt01", sample)
+        self.assertIn("temp_tt06", sample)
+        self.assertIn("temp_tt16", sample)
+        self.assertIsNone(sample["temp_tt13"])  # Not Connected
+        self.assertIsNone(sample["temp_tt14"])  # Not Connected
 
         # Realistic ranges
         self.assertGreaterEqual(sample["milk_flow"], 0.0)
