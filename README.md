@@ -17,9 +17,50 @@ This project provides a complete, lightweight, and resilient data logging soluti
 ### Key Capabilities
 - **Modular PLC Abstraction**: Developed in Pune against a physics-faithful `MockPLCClient` that simulates the PHE-3 pasteurizer cycles, temperature dips, and diversion events. Swapping to the physical Allen-Bradley Micro850 PLC at the plant is handled entirely via configuration (`PLC_MODE: live`), without code modifications.
 - **SD Card Flash Protection**: High-frequency 1-second sampling (86,400 rows/day) can destroy microSD cards through write amplification. This system utilizes SQLite in **WAL (Write-Ahead Logging)** mode coupled with a thread-safe in-memory ring buffer that commits in atomic batches every 15–30 seconds.
-- **Zero-Install Client Dashboard**: Serves a live, responsive SCADA-styled dark dashboard over Flask & Chart.js on port `8080`. Any PC or laptop connected to the same network switch can view real-time metrics and trends by navigating to `http://<pi-ip>:8080`.
+- **Zero-Install Client Dashboard**: Serves a live, responsive SCADA-styled industrial supervisory console over Flask & Chart.js on port `8080` (optimized with 3-second live refresh streaming from `/dev/shm` tmpfs buffer). Any PC or laptop connected to the same network switch can view real-time metrics and trends by navigating to `http://<pi-ip>:8080`.
 - **PHE-3 Format Excel Reports**: Generates automated shift and daily `.xlsx` reports matching the column layout and format of the sister-line PHE-3 SCADA report, including high-level KPI summaries and embedded openpyxl trend charts.
 - **Systemd Daemons**: Managed as self-healing background system services with automatic restarts, exponential backoff on network dropouts, and rate-limited logging.
+
+---
+
+## Live Supervisory SCADA Dashboard (v3.4.0)
+
+The web supervisory console provides operators and plant engineers with real-time visibility across all 30 pasteurizer instruments, thermal profiles, hydraulic pressures, valves, and multi-axis telemetric trend curves.
+
+### 1. Supervisory Overview & Plant KPIs
+Comprehensive supervisory view displaying plant process state (`ON` / `AUTO MODE`), master alarm annunciator bar, real-time clock, shift totalizer (`79,547.6 L`), and critical pasteurization indicators.
+
+<div align="center">
+  <img src="docs/assets/dashboard_overview.png" alt="Supervisory SCADA Dashboard Overview" width="95%" />
+</div>
+
+### 2. Thermal Profile & Temperature Transmitters (TT01 – TT09)
+Continuous legal pasteurization tracking across all 9 thermal zones, including Infeed Channel (`TT-01`), Legal Pasteurization Point (`TT-05` [CRITICAL]), Holding Verification (`TT-06`), Chilling Loop (`TT-08`), and Differential Delta-T across the PHE.
+
+<div align="center">
+  <img src="docs/assets/thermal_profile.png" alt="Thermal Profile TT01-TT09" width="95%" />
+</div>
+
+### 3. Hydraulic Profile & Pressure Transmitters (PT01 – PT06)
+Differential line pressures across raw milk infeed, regeneration stages, holding tube inlet, chilled milk delivery, and hot water loops.
+
+<div align="center">
+  <img src="docs/assets/hydraulic_profile.png" alt="Hydraulic Pressure Profile PT01-PT06" width="95%" />
+</div>
+
+### 4. Process Control, Mass Flow & Vessel Gauges
+Electromagnetic flow meter telemetry (`FIT-101`), cumulative product batch volume totalizer (`TOT-01`), steam modulating control valve position (`CV-101`), and deodoriser vessel hydrostatic level.
+
+<div align="center">
+  <img src="docs/assets/process_control.png" alt="Process Control & Mass Flow" width="95%" />
+</div>
+
+### 5. Multi-Axis Telemetric Trend Analysis
+Interactive multi-axis time-series visualization with 4 simultaneous Y-axes: **Temperature (°C)**, **Flow Rate (L/H)**, **Pressure (Bar)**, and **Control/Level (%)**. Features instant time window switching (15M, 30M, 1H, 4H), dynamic channel chip toggles, and live min/max/average telemetric statistics strip.
+
+<div align="center">
+  <img src="docs/assets/trend_analysis.png" alt="Multi-Axis Telemetric Trend Analysis" width="95%" />
+</div>
 
 ---
 
@@ -257,17 +298,18 @@ Open a browser on the client PC (connected to the same switch or Wi-Fi) and navi
 `http://192.168.1.169:8080` (or `http://heatwatch.local:8080`)
 
 ### Dashboard Features
-- **No-Scroll Single Viewport**: Compact SCADA layout designed to fit 100% within the screen without vertical scrolling.
-- **Top Brand Separator**: Anik Dairy and Goose logos separated by a clean vertical divider line at top-left.
-- **High-Visibility Banner**: Displays immediate process state (e.g. `PRODUCTION ACCEPTED`, `PRODUCTION CIRCULATION`, `CIP: Caustic Flush running`) with color-coded alerting.
-- **Top Metrics**: Real-time Milk Flow (L/hr), Holding In Temp (°C), Holding Out Temp (°C), and Recipe Product Code.
-- **Valve & CIP Actuators**: Position badges (Forward / Divert) and diagnostic reasons for FDV-1 and FDV-2.
-- **Dual-Axis Live Trend**: Interactive Chart.js graph plotting Temperature (°C) on the left axis and Milk Flow (L/hr) on the right axis across 15m, 30m, or 60m windows.
-- **One-Click Data Exports**:
-  - **CSV**: Instant download of raw telemetric log rows.
-  - **Excel**: Formatted audit-grade workbook matching the sister line PHE-3 SCADA report with embedded openpyxl charts.
-  - **PDF**: Executive quality audit report featuring both the **Anik Dairy** and **Goose** logos in the header, KPI summary table, and formatted telemetry tables.
-- **Pi Diagnostics**: Real-time CPU load, SoC temperature, RAM usage, and remaining SD card storage.
+- **Industrial SCADA Styling**: Premium light theme matching the Anik brand palette with clear high-contrast typography, squared cards, and clean visual hierarchy.
+- **Top Brand Separator**: Official Anik Dairy and Goose logos with integrated real-time alarm annunciator and process state pills (`ON` / `AUTO MODE`).
+- **3-Second Ultra-Low Latency Streaming**: Fast live updates served straight from `/dev/shm` in-memory tmpfs ring buffer with zero disk I/O drag.
+- **30-Instrument Categorized Sections**:
+  - **SEC 01 (TT01–TT09)**: Thermal Profile & Temperature Transmitters (with Delta-T calculation).
+  - **SEC 02 (PT01–PT06)**: Hydraulic Profile & Pressure Transmitters.
+  - **SEC 03 (CV/LT)**: Process Control, Mass Flow (`FIT-101`), Totalizer (`TOT-01`), and Deodoriser Level (`LT-101`).
+  - **SEC 04 (SP)**: Legal Pasteurizer and Process Temperature Setpoints.
+  - **SEC 05 (FDV/Interlocks)**: Valve actuators and safety interlocks (FDV-1, FDV-2).
+- **Multi-Axis Telemetric Trend Analysis**: Interactive multi-axis time-series visualization with 4 simultaneous Y-axes: Temperature (°C), Flow Rate (L/H), Pressure (Bar), and Control/Level (%). Supports 15M, 30M, 1H, and 4H timeframes with interactive channel chips.
+- **One-Click Comprehensive Data Exports**: Instant CSV and Excel export featuring complete telemetry across all 30 instruments with shift totals and diagnostic codes.
+- **Pi Diagnostics Strip**: Real-time CPU load, SoC temperature, RAM usage, SD card storage, and SQLite WAL buffer metrics.
 
 ---
 
