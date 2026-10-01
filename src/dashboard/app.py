@@ -176,47 +176,57 @@ def api_minimize_kiosk():
 
 @app.route("/api/export/csv")
 def export_csv():
-    """Export process telemetry as CSV."""
+    """Export full process telemetry as CSV — all 30 SCADA instruments shown on the dashboard."""
     hours = request.args.get("hours", default=8.0, type=float)
     now = datetime.now()
     start = now - timedelta(hours=hours)
 
     rows = db.get_records_between(start.isoformat(), now.isoformat())
     if not rows:
-        # Fallback to recent records if database clock difference
         rows = db.get_recent_records(limit=int(hours * 3600))
+
+    # Import column definitions from the report generator to stay in sync
+    try:
+        from src.reports.generator import ALL_COLUMNS, BOOL_FIELDS, _format_bool
+    except ImportError:
+        # Fallback: minimal export if generator not available
+        ALL_COLUMNS = [
+            ("Timestamp", "timestamp", None),
+            ("Product", "product", None),
+            ("Feed Flow (L/H)", "feed_flow", None),
+            ("Holding In Temp (°C)", "holding_in_temp", None),
+            ("Holding Out Temp (°C)", "holding_out_temp", None),
+        ]
+        BOOL_FIELDS = {}
+        def _format_bool(field, val):
+            return "ACTIVE" if val == 1 else "IDLE"
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([
-        "Timestamp", "Product", "Milk Flow (L/hr)", "Holding In Temp (C)",
-        "Holding Out Temp (C)", "FDV-1 Status", "FDV-1 Reason",
-        "FDV-2 Status", "FDV-2 Reason", "CIP Status", "CIP Step", "Process Status"
-    ])
 
+    # Header row — every instrument label
+    writer.writerow([col_name for col_name, _, _ in ALL_COLUMNS])
+
+    # Data rows
     for r in rows:
-        writer.writerow([
-            r.get("timestamp"),
-            r.get("product"),
-            r.get("milk_flow"),
-            r.get("holding_in_temp"),
-            r.get("holding_out_temp"),
-            "FORWARD" if r.get("fdv1_status") == 1 else "DIVERT",
-            r.get("fdv1_reason"),
-            "FORWARD" if r.get("fdv2_status") == 1 else "DIVERT",
-            r.get("fdv2_reason"),
-            "ACTIVE" if r.get("cip_status") == 1 else "IDLE",
-            r.get("cip_step"),
-            r.get("status")
-        ])
+        row_vals = []
+        for col_name, field, _ in ALL_COLUMNS:
+            val = r.get(field)
+            if field in BOOL_FIELDS:
+                val = _format_bool(field, val)
+            elif val is None:
+                val = ""
+            row_vals.append(val)
+        writer.writerow(row_vals)
 
     output.seek(0)
-    filename = f"pasteurizer_log_{now.strftime('%Y%m%d_%H%M')}.csv"
+    filename = f"pasteurizer_full_log_{now.strftime('%Y%m%d_%H%M')}.csv"
     return Response(
         output.getvalue(),
         mimetype="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
 
 
 @app.route("/api/export/excel")
